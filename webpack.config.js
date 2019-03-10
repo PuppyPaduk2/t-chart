@@ -29,4 +29,8 @@ module.exports = {
       { from: 'public', to: '.' },
     ]),
   ],
+  devServer: {
+    writeToDisk: true,
+    port: 5000,
+  },
 };

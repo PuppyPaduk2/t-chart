@@ -1,1 +1,1 @@
-console.log('default setup');
+console.log('default setup + webpack dev server');
