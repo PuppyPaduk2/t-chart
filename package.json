@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",
     "build-watch": "webpack --watch",
-    "start:dev": "webpack-dev-server"
+    "start:dev": "webpack-dev-server",
+    "flow": "flow"
   },
   "repository": {
     "type": "git",
@@ -22,9 +23,12 @@
   "devDependencies": {
     "@babel/core": "^7.3.4",
     "@babel/preset-env": "^7.3.4",
+    "@babel/preset-flow": "^7.0.0",
     "babel-loader": "^8.0.5",
     "copy-webpack-plugin": "^5.0.0",
     "css-loader": "^2.1.1",
+    "flow": "^0.2.3",
+    "flow-bin": "^0.94.0",
     "style-loader": "^0.23.1",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.2.3",
