@@ -1,6 +1,7 @@
 // @flow
 
-import createElement from './create-element';
+import createElement from '../../core/create-element';
+import createContent from './create-content';
 import createTogglersBar from './create-togglers-bar';
 import './styles.css';
 
@@ -20,8 +21,9 @@ class Chart {
 
     this.props = props;
 
-    const container = createElement(owner, {
+    const container = createElement({
       className: 'chart',
+      owner,
     });
 
     createHeader(container);
@@ -38,25 +40,19 @@ class Chart {
 export default Chart;
 
 function createHeader(owner) {
-  const element = createElement(owner, {
+  const element = createElement({
     className: 'chart-header',
     text: 'Followers',
-  });
-
-  return element;
-}
-
-function createContent(owner) {
-  const element = createElement(owner, {
-    className: 'chart-content',
+    owner,
   });
 
   return element;
 }
 
 function createMap(owner) {
-  const element = createElement(owner, {
+  const element = createElement({
     className: 'chart-map',
+    owner,
   });
 
   return element;

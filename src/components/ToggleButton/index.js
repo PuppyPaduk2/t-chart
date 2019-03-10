@@ -1,62 +1,46 @@
 // @flow
 
+import createElement from '../../core/create-element';
 import './styles.css';
 
-type Props = {
+export type Props = {
   owner: Object,
   value?: boolean,
   text?: string,
-  colorIcon?: string,
   onChange?: Function,
+  className?: string,
 };
 
-class Button {
+class ToggleButton {
   props: Props
   element: Object
   value: boolean
-  onClick: Function
 
   constructor(props: Props) {
     const {
       owner,
       value,
       text,
-      colorIcon,
+      className,
     } = props;
 
     this.props = props;
+    this.element = createElement({
+      listeners: { click: this.onClick },
+      tagName: 'button',
+      className: 'toggle-button',
+      owner,
+      text,
+    });
 
-    this.element = document.createElement('button');
-    this.element.addEventListener('click', this.onClick);
+    if (className) {
+      this.element.className = `${this.element.className} ${className}`;
+    }
 
-    this.setText(text);
-    this.setClassName();
-    this.setColorIcon(colorIcon);
     this.setValue(value);
-
-    owner.append(this.element);
   }
 
-  setText(text: string = 'Button') {
-    this.element.innerText = text;
-  }
-
-  setClassName(className: string = '') {
-    this.element.className = [
-      'toggle-button',
-      ...className.split(' '),
-    ].filter(Boolean).join(' ');
-  }
-
-  getClassName() {
-    return this.element.className;
-  }
-
-  setColorIcon(color: string = 'black') {
-    this.element.style.cssText = `--bg-color-icon:${color}`;
-  }
-
-  setValue(value: boolean = false) {
+  setValue(value?: boolean = false) {
     if (this.value !== value) {
       this.value = value;
       this.element.dataset['value'] = value;
@@ -79,4 +63,4 @@ class Button {
   }
 }
 
-export default Button;
+export default ToggleButton;

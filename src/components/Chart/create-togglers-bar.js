@@ -1,7 +1,7 @@
 // @flow
 
-import createElement from './create-element';
-import ToggleButton from '../ToggleButton';
+import createElement from '../../core/create-element';
+import ToggleButtonLine from '../ToggleButtonLine';
 
 type Params = {
   owner: Object,
@@ -11,11 +11,12 @@ type Params = {
 
 function createTogglersBar(params: Params) {
   const { owner, colors, names } = params;
-  const element = createElement(owner, {
+  const element = createElement({
     className: 'chart-togglers-bar',
+    owner,
   });
 
-  Object.keys(names).forEach(key => new ToggleButton({
+  Object.keys(names).forEach(key => new ToggleButtonLine({
     owner: element,
     text: names[key],
     colorIcon: colors[key],
