@@ -1,6 +1,7 @@
 html, body, #root {
   width: 100%;
   height: 100%;
+  font-size: 16px;
 }
 
 * {
@@ -9,15 +10,23 @@ html, body, #root {
 }
 
 #root {
-  padding: 16px 0;
+  padding: 16px 16px;
 }
 
 #chart-header {
   font-family: Arial;
   font-weight: bold;
-  padding: 0 16px;
+  font-size: 1.5rem;
 }
 
-#chart-content {
+#chart-content canvas {
+  width: 100%;
+}
 
+#chart-toggler {
+  display: flex;
+}
+
+#chart-toggler > *:not(:first-child) {
+  margin-left: 16px;
 }

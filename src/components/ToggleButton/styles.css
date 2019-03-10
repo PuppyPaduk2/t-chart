@@ -1,0 +1,70 @@
+:root {
+  --duration-animation: 0.3s;
+}
+
+.toggle-button {
+  display: flex;
+  padding: 6px 16px 6px 8px;
+  border-radius: 40px;
+  border: 1px solid #E0E0E0;
+  background: none;
+  outline: none;
+  font-size: 1rem;
+  align-items: flex-end;
+  cursor: pointer;
+  position: relative;
+}
+
+.toggle-button:before {
+  content: '';
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: 100%;
+  display: inline-block;
+  margin-right: 8px;
+  box-sizing: border-box;
+  border: 2px solid var(--bg-color-icon);
+  transition: all var(--duration-animation) ease-out;
+}
+
+.toggle-button[data-value="true"]:before {
+  border-width: 0.65rem;
+  background-color: var(--bg-color-icon);
+}
+
+@keyframes onClickAfter {
+  from {
+    opacity: 1;
+    top: 6px;
+    left: 8px;
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+
+  to {
+    width: 5rem;
+    height: 5rem;
+    top: -1.5rem;
+    left: -1.4rem;
+    opacity: 0;
+  }
+}
+
+.toggle-button:after {
+  position: absolute;
+  content: '';
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: 100%;
+  display: inline-block;
+  margin-right: 8px;
+  box-sizing: border-box;
+  border: 0.6rem solid #78909C;
+  opacity: 0;
+  top: 6px;
+  left: 8px;
+}
+
+.toggle-button[data-click="true"]:after {
+  animation: onClickAfter var(--duration-animation) ease-in-out;
+}
