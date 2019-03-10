@@ -27,7 +27,6 @@ class Button {
     this.props = props;
 
     this.element = document.createElement('button');
-    this.onClick = this.onClick.bind(this);
     this.element.addEventListener('click', this.onClick);
 
     this.setText(text);
@@ -64,7 +63,7 @@ class Button {
     }
   }
 
-  onClick() {
+  onClick = () => {
     const { onChange } = this.props;
 
     this.element.dataset['click'] = undefined;

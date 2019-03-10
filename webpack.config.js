@@ -19,6 +19,7 @@ module.exports = {
         options: {
           cacheDirectory: true,
           presets: ['@babel/preset-env', '@babel/flow'],
+          plugins: ['@babel/plugin-proposal-class-properties'],
         },
       },
     }, {
