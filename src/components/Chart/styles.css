@@ -8,10 +8,6 @@
   font-size: 1rem;
 }
 
-.chart-content canvas {
-  width: 100%;
-}
-
 .chart-togglers-bar {
   display: flex;
 }

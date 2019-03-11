@@ -28,13 +28,13 @@ window.addEventListener('load', () => {
       if (firstElementChild) {
         firstElementChild.setAttribute(
           'data-theme',
-          value ? 'dark' : undefined,
+          value ? 'dark' : 'light',
         );
       }
     },
   });
 
-  chartData.forEach((data) => {
+  chartData.reverse().forEach((data) => {
     const chart = new Chart({
       owner: root,
       data,
