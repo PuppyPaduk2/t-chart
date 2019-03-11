@@ -44,7 +44,9 @@ const getMaxValueLines = (params: Params) => {
   ), 0);
 };
 
-const getPointsYColumns = (params: Params, maxValue: number) => {
+const getPercentX = (index, column) => (index - 1) / (column.length - 2) * 100;
+
+const getPointsColumns = (params: Params, maxValue: number) => {
   const { data, state } = params;
   const { columns } = data;
 
@@ -52,6 +54,16 @@ const getPointsYColumns = (params: Params, maxValue: number) => {
     const id = column[0];
 
     if (isLine(data, id) && checkStatusLine(state, id)) {
+      result[id] = column.reduce((columnResult, value, index) => {
+        if (typeof value === 'number') {
+          columnResult.push([
+            getPercentX(index, column),
+            value / maxValue * 100,
+          ]);
+        }
+
+        return columnResult;
+      }, []);
     }
 
     return result;
@@ -62,7 +74,7 @@ function formatData(params: Params) {
   console.time('formatData');
 
   const maxValue = getMaxValueLines(params);
-  const pointsY = getPointsYColumns(params, maxValue);
+  const pointsY = getPointsColumns(params, maxValue);
 
   console.log(maxValue, pointsY);
 
