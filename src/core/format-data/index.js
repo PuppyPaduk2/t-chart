@@ -1,6 +1,6 @@
 // @flow
 
-import checkTime from './check-time';
+import checkTime from '../check-time';
 
 type Params = {
   state: Object,
@@ -97,12 +97,8 @@ const getPointsYColumns = (params, precentPoints) => {
   const widthPercentX = width / (period[1] - period[0]);
   const widthPercentY = height / 100;
 
-    // console.log(widthPercentX, precentPoints);
-
   return Object.keys(precentPoints).reduce((result, id) => {
     const column = precentPoints[id];
-
-    console.log(column.length)
 
     result[id] = column.map((precentPoint) => ([
       precentPoint[0] * widthPercentX,

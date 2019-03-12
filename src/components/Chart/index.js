@@ -4,6 +4,7 @@ import createElement from '../../core/create-element';
 import createState from '../../core/create-state';
 import formatData from '../../core/format-data';
 import canvasDrawLine from '../../core/canvas-draw/line';
+import checkTime from '../../core/check-time';
 import ToggleButtonLine from '../ToggleButtonLine';
 import './styles.css';
 
@@ -20,6 +21,8 @@ type State = {
 
 class Chart {
   container: Object
+  content: Object
+  contentCanvas: Object
   props: Props
   state: Object
 
@@ -32,8 +35,7 @@ class Chart {
     });
 
     this.state.subscribe((prevState, nextState) => {
-      this.removeContent();
-      this.createContent();
+      this.drawChart();
     });
 
     this.createContainer();
@@ -59,45 +61,43 @@ class Chart {
     });
   }
 
-  removeContent() {
-    const content = this.container
-      .getElementsByClassName('chart-content')[0];
-
-    if (content) {
-      content.remove();
-    }
-  }
-
   createContent() {
-    const { size } = this.state.getValue();
-    const { width, height } = size;
-    const { data } = this.props;
-    const { colors } = data;
-    const content = createElement({
+    this.content = createElement({
       className: 'chart-content',
       owner: this.container,
     });
-    const canvas: Object = createElement({
+
+    this.contentCanvas = createElement({
       tagName: 'canvas',
-      owner: content,
-    });
-    const pointsY = formatData({
-      state: this.state,
-      data: this.props.data,
+      owner: this.content,
     });
 
-    canvas.setAttribute('width', width.toString());
-    canvas.setAttribute('height', height.toString());
+    this.drawChart();
+  }
 
-    const context = canvas.getContext('2d');
+  drawChart() {
+    checkTime(() => {
+      const { size } = this.state.getValue();
+      const { width, height } = size;
+      const { data } = this.props;
+      const { colors } = data;
+      const context = this.contentCanvas.getContext('2d');
+      const pointsY = formatData({
+        state: this.state,
+        data: this.props.data,
+      });
 
-    context.lineWidth = 2;
+      this.contentCanvas.setAttribute('width', width.toString());
+      this.contentCanvas.setAttribute('height', height.toString());
 
-    Object.keys(pointsY).forEach((id) => {
-      context.strokeStyle = colors[id];
+      context.lineWidth = 2;
 
-      canvasDrawLine(context, pointsY[id]);
-    });
+      Object.keys(pointsY).forEach((id) => {
+        context.strokeStyle = colors[id];
+
+        canvasDrawLine(context, pointsY[id]);
+      });
+    }, 'drawChart');
   }
 
   createMap() {
