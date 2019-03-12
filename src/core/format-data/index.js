@@ -76,7 +76,20 @@ const getPrecentPointsYColumns = (params: Params, maxValue: number) => {
 };
 
 const getPointsYColumns = (params, precentPoints) => {
-  console.log('@getPointsYColumns');
+  const { state } = params;
+  const { size } = state.getValue();
+  const { width, height } = size;
+  const widthPercentX = width / 100;
+  const widthPercentY = height / 100;
+
+  return Object.keys(precentPoints).reduce((result, id) => {
+    result[id] = precentPoints[id].map((precentPoint) => ([
+      precentPoint[0] * widthPercentX,
+      precentPoint[1] * widthPercentY,
+    ]));
+
+    return result;
+  }, {});
 };
 
 function formatData(params: Params) {
@@ -85,8 +98,8 @@ function formatData(params: Params) {
     const precentPointsY = getPrecentPointsYColumns(params, maxValue);
     const pointsY = getPointsYColumns(params, precentPointsY);
 
-    console.log(maxValue, precentPointsY);
-  }, 'formatData');
+    console.log(maxValue, pointsY);
+  }, 'formatData', true);
 }
 
 export default formatData;

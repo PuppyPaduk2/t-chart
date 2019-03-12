@@ -1,7 +1,13 @@
 // @flow
 
-export default (callback: Function, key?: string = 'time') => {
-  console.time(key);
+export default (callback: Function, key?: string = 'time', lock?: boolean = false) => {
+  if (lock !== true) {
+    console.time(key);
+  }
+
   callback();
-  console.timeEnd(key);
+
+  if (lock !== true) {
+    console.timeEnd(key);
+  }
 };
