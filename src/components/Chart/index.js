@@ -3,6 +3,7 @@
 import createElement from '../../core/create-element';
 import createState from '../../core/create-state';
 import formatData from '../../core/format-data';
+import canvasDrawLine from '../../core/canvas-draw/line';
 import ToggleButtonLine from '../ToggleButtonLine';
 import './styles.css';
 
@@ -26,20 +27,13 @@ class Chart {
     this.props = props;
     this.state = createState({
       size: { width: 700, height: 450 },
-      period: [0, 100],
+      period: [10, 35],
       statusLine: {},
     });
 
     this.state.subscribe((prevState, nextState) => {
-      formatData({
-        state: this.state,
-        data: this.props.data,
-      });
-    });
-
-    formatData({
-      state: this.state,
-      data: this.props.data,
+      this.removeContent();
+      this.createContent();
     });
 
     this.createContainer();
@@ -65,10 +59,44 @@ class Chart {
     });
   }
 
+  removeContent() {
+    const content = this.container
+      .getElementsByClassName('chart-content')[0];
+
+    if (content) {
+      content.remove();
+    }
+  }
+
   createContent() {
-    createElement({
+    const { size } = this.state.getValue();
+    const { width, height } = size;
+    const { data } = this.props;
+    const { colors } = data;
+    const content = createElement({
       className: 'chart-content',
       owner: this.container,
+    });
+    const canvas: Object = createElement({
+      tagName: 'canvas',
+      owner: content,
+    });
+    const pointsY = formatData({
+      state: this.state,
+      data: this.props.data,
+    });
+
+    canvas.setAttribute('width', width.toString());
+    canvas.setAttribute('height', height.toString());
+
+    const context = canvas.getContext('2d');
+
+    context.lineWidth = 2;
+
+    Object.keys(pointsY).forEach((id) => {
+      context.strokeStyle = colors[id];
+
+      canvasDrawLine(context, pointsY[id]);
     });
   }
 

@@ -5,9 +5,11 @@ export default (callback: Function, key?: string = 'time', lock?: boolean = fals
     console.time(key);
   }
 
-  callback();
+  const result = callback();
 
   if (lock !== true) {
     console.timeEnd(key);
   }
+
+  return result;
 };

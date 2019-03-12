@@ -7,11 +7,28 @@ type Params = {
   data: Object,
 };
 
-const getMaxValue = column => column.reduce((result, value) => (
-  typeof value === 'number' && result < value
-    ? value
-    : result
-), 0);
+const getPercentX = (index, column) => (index - 1) / (column.length - 2) * 100;
+
+const filterByPeriod = (params: Params, column) => {
+  const { state } = params;
+  const { period } = state.getValue();
+
+  return column.filter((value, index) => {
+    if (typeof value === 'number') {
+      const persent = getPercentX(index, column);
+
+      return period[0] <= persent && persent <= period[1];
+    }
+  });
+};
+
+const getMaxValue = (params: Params, column) => {
+  return filterByPeriod(params, column).reduce((result, value) => (
+    typeof value === 'number' && result < value
+      ? value
+      : result
+  ), 0);
+};
 
 const checkStatusLine = (state, id) => {
   const { statusLine } = state.getValue();
@@ -34,7 +51,7 @@ const getMaxValues = (params: Params) => {
     const id = column[0];
 
     if (isLine(data, id) && checkStatusLine(state, id)) {
-      result[id] = getMaxValue(column);
+      result[id] = getMaxValue(params, column);
     }
 
     return result;
@@ -49,8 +66,6 @@ const getMaxValueLines = (params: Params) => {
   ), 0);
 };
 
-const getPercentX = (index, column) => (index - 1) / (column.length - 2) * 100;
-
 const getPrecentPointsYColumns = (params: Params, maxValue: number) => {
   const { data, state } = params;
   const { columns } = data;
@@ -59,7 +74,7 @@ const getPrecentPointsYColumns = (params: Params, maxValue: number) => {
     const id = column[0];
 
     if (isLine(data, id) && checkStatusLine(state, id)) {
-      result[id] = column.reduce((columnResult, value, index) => {
+      result[id] = filterByPeriod(params, column).reduce((columnResult, value, index) => {
         if (typeof value === 'number') {
           columnResult.push([
             getPercentX(index, column),
@@ -77,15 +92,21 @@ const getPrecentPointsYColumns = (params: Params, maxValue: number) => {
 
 const getPointsYColumns = (params, precentPoints) => {
   const { state } = params;
-  const { size } = state.getValue();
+  const { size, period } = state.getValue();
   const { width, height } = size;
-  const widthPercentX = width / 100;
+  const widthPercentX = width / (period[1] - period[0]);
   const widthPercentY = height / 100;
 
+    // console.log(widthPercentX, precentPoints);
+
   return Object.keys(precentPoints).reduce((result, id) => {
-    result[id] = precentPoints[id].map((precentPoint) => ([
+    const column = precentPoints[id];
+
+    console.log(column.length)
+
+    result[id] = column.map((precentPoint) => ([
       precentPoint[0] * widthPercentX,
-      precentPoint[1] * widthPercentY,
+      height - (precentPoint[1] * widthPercentY),
     ]));
 
     return result;
@@ -93,13 +114,13 @@ const getPointsYColumns = (params, precentPoints) => {
 };
 
 function formatData(params: Params) {
-  checkTime(() => {
+  return checkTime(() => {
     const maxValue = getMaxValueLines(params);
     const precentPointsY = getPrecentPointsYColumns(params, maxValue);
     const pointsY = getPointsYColumns(params, precentPointsY);
 
-    console.log(maxValue, pointsY);
-  }, 'formatData', true);
+    return pointsY;
+  }, 'formatData');
 }
 
 export default formatData;
