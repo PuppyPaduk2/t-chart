@@ -1,6 +1,11 @@
 // @flow
 
-type Params = { state: Object, data: Object };
+import checkTime from './check-time';
+
+type Params = {
+  state: Object,
+  data: Object,
+};
 
 const getMaxValue = column => column.reduce((result, value) => (
   typeof value === 'number' && result < value
@@ -23,7 +28,7 @@ const isLine = (data, id) => {
 
 const getMaxValues = (params: Params) => {
   const { state, data } = params;
-  const { columns, types } = data;
+  const { columns } = data;
 
   return columns.reduce((result, column) => {
     const id = column[0];
@@ -46,7 +51,7 @@ const getMaxValueLines = (params: Params) => {
 
 const getPercentX = (index, column) => (index - 1) / (column.length - 2) * 100;
 
-const getPointsColumns = (params: Params, maxValue: number) => {
+const getPrecentPointsYColumns = (params: Params, maxValue: number) => {
   const { data, state } = params;
   const { columns } = data;
 
@@ -70,15 +75,18 @@ const getPointsColumns = (params: Params, maxValue: number) => {
   }, {});
 };
 
+const getPointsYColumns = (params, precentPoints) => {
+  console.log('@getPointsYColumns');
+};
+
 function formatData(params: Params) {
-  console.time('formatData');
+  checkTime(() => {
+    const maxValue = getMaxValueLines(params);
+    const precentPointsY = getPrecentPointsYColumns(params, maxValue);
+    const pointsY = getPointsYColumns(params, precentPointsY);
 
-  const maxValue = getMaxValueLines(params);
-  const pointsY = getPointsColumns(params, maxValue);
-
-  console.log(maxValue, pointsY);
-
-  console.timeEnd('formatData');
+    console.log(maxValue, precentPointsY);
+  }, 'formatData');
 }
 
 export default formatData;
