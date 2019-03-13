@@ -8,5 +8,5 @@ export default (period: [number, number], column: Array<string|number>) => {
     result.max = result.max < value ? value : result.max;
 
     return result;
-  }, { min: 0, max: 0 });
+  }, { min: 99999999, max: 0 });
 };

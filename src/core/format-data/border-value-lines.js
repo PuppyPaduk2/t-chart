@@ -39,5 +39,5 @@ export default (params: Params) => {
     result.max = result.max < max ? max : result.max;
 
     return result;
-  }, { min: 0, max: 0 });
+  }, { min: 99999999, max: 0 });
 };
