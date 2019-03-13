@@ -30,7 +30,7 @@ class Chart {
     this.props = props;
     this.state = createState({
       size: { width: 700, height: 450 },
-      period: [10, 35],
+      period: [65, 100],
       statusLine: {},
     });
 
@@ -77,14 +77,17 @@ class Chart {
 
   drawChart() {
     checkTime(() => {
-      const { size } = this.state.getValue();
+      const { size, statusLine, period } = this.state.getValue();
       const { width, height } = size;
       const { data } = this.props;
-      const { colors } = data;
+      const { colors, columns, types, } = data;
       const context = this.contentCanvas.getContext('2d');
       const pointsY = formatData({
-        state: this.state,
-        data: this.props.data,
+        size,
+        period,
+        columns,
+        statusLine,
+        types,
       });
 
       this.contentCanvas.setAttribute('width', width.toString());
