@@ -29,7 +29,7 @@ export default (params: Params) => {
         .reduce((columnResult, value, index) => {
           columnResult.push([
             percentX(column, index),
-            value / border.max * 100,
+            (value - border.min) / (border.max - border.min) * 100,
           ]);
 
           return columnResult;
