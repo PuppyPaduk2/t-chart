@@ -10,6 +10,8 @@ type Params = {
   types: Object,
   period: [number, number],
   border: { min: number, max: number },
+  stepSectionY: number,
+  countSectionsY: number,
 };
 
 export default (params: Params) => {
@@ -19,7 +21,12 @@ export default (params: Params) => {
     types,
     period,
     border,
+    stepSectionY,
+    countSectionsY,
   } = params;
+  const borderMaxSectionY = stepSectionY * countSectionsY;
+
+  console.log(borderMaxSectionY);
 
   return columns.reduce((result, column) => {
     const id = column[0];
@@ -29,7 +36,7 @@ export default (params: Params) => {
         .reduce((columnResult, value, index) => {
           columnResult.push([
             percentX(column, index),
-            (value - border.min) / (border.max - border.min) * 100,
+            value / borderMaxSectionY * 100,
           ]);
 
           return columnResult;

@@ -30,8 +30,9 @@ class Chart {
     this.props = props;
     this.state = createState({
       size: { width: 700, height: 450 },
-      period: [65, 100],
+      period: [0, 100],
       statusLine: {},
+      countSectionsY: 6,
     });
 
     this.state.subscribe((prevState, nextState) => {
@@ -77,30 +78,52 @@ class Chart {
 
   drawChart() {
     checkTime(() => {
-      const { size, statusLine, period } = this.state.getValue();
+      const { size, statusLine, period, countSectionsY } = this.state.getValue();
       const { width, height } = size;
       const { data } = this.props;
-      const { colors, columns, types, } = data;
+      const { colors, columns, types } = data;
       const context = this.contentCanvas.getContext('2d');
-      const pointsY = formatData({
+      const formatedData = formatData({
         size,
         period,
         columns,
         statusLine,
         types,
+        countSectionsY,
       });
 
       this.contentCanvas.setAttribute('width', width.toString());
       this.contentCanvas.setAttribute('height', height.toString());
 
-      context.lineWidth = 2;
-
-      Object.keys(pointsY).forEach((id) => {
-        context.strokeStyle = colors[id];
-
-        canvasDrawLine(context, pointsY[id]);
-      });
+      this.drawLinesAxisY(context, formatedData);
+      this.drawLines(context, { ...formatedData, colors });
     }, 'drawChart');
+  }
+
+  drawLines(context: Object, params: Object) {
+    const { pointsLines, colors } = params;
+
+    context.lineWidth = 2;
+    context.lineJoin = 'round';
+
+    Object.keys(pointsLines).forEach((id) => {
+      context.strokeStyle = colors[id];
+
+      canvasDrawLine(context, pointsLines[id]);
+    });
+  }
+
+  drawLinesAxisY(context: Object, params: Object) {
+    const { pointsStepSectionY } = params;
+
+    context.lineWidth = 1;
+    context.strokeStyle = '#2d3A4A';
+
+    pointsStepSectionY.forEach((step) => {
+      const { points } = step;
+
+      canvasDrawLine(context, points);
+    });
   }
 
   createMap() {

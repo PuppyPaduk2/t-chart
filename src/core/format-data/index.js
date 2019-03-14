@@ -4,6 +4,8 @@ import checkTime from '../check-time';
 import getBorderValueLines from './border-value-lines';
 import getPercentPointsLines from './percent-points-lines';
 import getPointLines from './points-lines';
+import getStepSectionY from './step-section-y';
+import getPointsStepSectionY from './points-step-section-y';
 
 type Params = {
   size: { width: number, height: number },
@@ -11,38 +13,42 @@ type Params = {
   columns: Array<Array<any>>,
   statusLine: Object,
   types: Object,
+  countSectionsY: number,
 };
 
 export default (params: Params) => {
-  const {
-    columns,
-    statusLine,
-    types,
-    period,
-    size,
-  } = params;
-
   return checkTime(() => {
-    const border = getBorderValueLines({
-      columns,
-      statusLine,
-      types,
-      period,
+    const { columns, countSectionsY } = params;
+    const border = getBorderValueLines(params);
+    const stepSectionY = getStepSectionY({
+      count: countSectionsY,
+      border,
     });
     const percentPoints = getPercentPointsLines({
+      ...params,
       border,
-      columns,
-      statusLine,
-      types,
-      period,
+      stepSectionY,
     });
-    const pointLines = getPointLines({
+    const pointsLines = getPointLines({
+      ...params,
       border,
       percentPoints,
-      size,
-      period,
+    });
+    const pointsStepSectionY = getPointsStepSectionY({
+      ...params,
+      stepSectionY,
+      countSectionsY,
     });
 
-    return pointLines;
+    console.log(
+      border,
+      stepSectionY,
+      pointsStepSectionY,
+    );
+
+    return {
+      pointsLines,
+      pointsStepSectionY,
+    };
   }, 'formatData');
 };
