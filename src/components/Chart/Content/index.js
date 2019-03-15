@@ -107,8 +107,6 @@ class Content {
     context.font = '18px Arial';
     context.fillStyle = '#546778';
 
-    console.log(pointsStepSectionY)
-
     pointsStepSectionY.forEach((step) => {
       const { value, points } = step;
       const firstPoint = points[0];

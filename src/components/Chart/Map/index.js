@@ -87,30 +87,47 @@ class Map {
   }
 
   drawFrame(context: Object) {
-    const { state } = this.props;
-    const { sizes, period } = state.getValue();
-    const { height, width } = sizes.map;
-    const percentWidth = width / 100;
-    const offsetLeft = period[0] * percentWidth;
-    const offsetRight = (100 - period[1]) * percentWidth;
-    const border = sizes.space * 0.25;
-    const topBottomWidth = width - offsetRight - offsetLeft;
+    const config = this.getConfigFrame();
 
     context.fillStyle = 'rgba(91, 119, 148, 0.5)';
 
     // Top & bottom
-    context.fillRect(offsetLeft, 0, topBottomWidth, border);
-    context.fillRect(offsetLeft, height - border, topBottomWidth, border);
-
-    // Left & right
-    context.fillRect(offsetLeft, border, sizes.space, height - (border * 2));
-    context.fillRect(width - sizes.space - offsetRight, border, sizes.space, height - (border * 2));
+    config.blocks.border.forEach(border => context.fillRect(...border));
 
     // Black blocks
     context.fillStyle = 'rgba(31, 42, 56, 0.7)';
 
-    context.fillRect(0, 0, offsetLeft, height);
-    context.fillRect(offsetLeft + topBottomWidth, 0, offsetRight, height);
+    config.blocks.shadow.forEach(border =>  context.fillRect(...border));
+  }
+
+  getConfigFrame() {
+    const { state } = this.props;
+    const { sizes, period } = state.getValue();
+    const { height, width } = sizes.map;
+    const percentWidth = width / 100;
+    const offset = {
+      left: period[0] * percentWidth,
+      right: (100 - period[1]) * percentWidth,
+    };
+    const border = sizes.space * 0.25;
+    const frameWidth = width - offset.right - offset.left;
+
+    return {
+      offset,
+      width: frameWidth,
+      blocks: {
+        border: [
+          [offset.left, 0, frameWidth, border],
+          [offset.left, height - border, frameWidth, border],
+          [offset.left, border, sizes.space, height - (border * 2)],
+          [width - sizes.space - offset.right, border, sizes.space, height - (border * 2)],
+        ],
+        shadow: [
+          [0, 0, offset.left, height],
+          [offset.left + frameWidth, 0, offset.right, height],
+        ],
+      },
+    };
   }
 }
 
