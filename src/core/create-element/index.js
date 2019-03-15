@@ -36,12 +36,6 @@ function createElement(params?: Params = {}) {
     owner.append(element);
   }
 
-  if (listeners) {
-    Object.keys(listeners)
-      .forEach(nameEvent =>
-        element.addEventListener(nameEvent, listeners[nameEvent]));
-  }
-
   return element;
 }
 

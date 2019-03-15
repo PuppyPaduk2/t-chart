@@ -1,6 +1,7 @@
 // @flow
 
 import createElement from '../../core/create-element';
+import listenElement from '../../core/listen-element';
 import './styles.css';
 
 export type Props = {
@@ -26,11 +27,15 @@ class ToggleButton {
 
     this.props = props;
     this.element = createElement({
-      listeners: { click: this.onClick },
       tagName: 'button',
       className: 'toggle-button',
       owner,
       text,
+    });
+
+    listenElement({
+      element: this.element,
+      listeners: { click: this.onClick },
     });
 
     if (className) {
