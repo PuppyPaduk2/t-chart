@@ -1,7 +1,7 @@
 // @flow
 
 export default (callback: Function, key?: string = 'time', lock?: boolean = false) => {
-  // lock = true;
+  lock = true;
 
   if (lock !== true) {
     console.time(key);

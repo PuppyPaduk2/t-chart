@@ -47,11 +47,11 @@ export default (params: Params) => {
       percentPoints,
     });
 
-    console.log(
-      stepSectionY,
-      border,
-      stepsSectionsY,
-    );
+    // console.log(
+    //   stepSectionY,
+    //   border,
+    //   stepsSectionsY,
+    // );
 
     return {
       pointsLines,
