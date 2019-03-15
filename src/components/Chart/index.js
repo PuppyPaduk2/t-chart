@@ -4,6 +4,7 @@ import createElement from '../../core/create-element';
 import createState from '../../core/create-state';
 import formatData from '../../core/format-data';
 import canvasDrawLine from '../../core/canvas-draw/line';
+import canvasDrawHorizontalAxis from '../../core/canvas-draw/horizontal-axis';
 import checkTime from '../../core/check-time';
 import ToggleButtonLine from '../ToggleButtonLine';
 import './styles.css';
@@ -97,20 +98,19 @@ class Chart {
 
       this.drawLinesAxisY(context, formatedData);
       this.drawLines(context, { ...formatedData, colors });
+      this.drawValueLinesAxisY(context, formatedData);
     }, 'drawChart');
   }
 
   drawLinesAxisY(context: Object, params: Object) {
     const { pointsStepSectionY } = params;
 
-    context.lineWidth = 1;
-    context.lineCap = 'square';
-    context.strokeStyle = '#2D3A4A';
+    context.fillStyle = '#2D3A4A';
 
     pointsStepSectionY.forEach((step) => {
       const { points } = step;
 
-      canvasDrawLine(context, points);
+      canvasDrawHorizontalAxis(context, points);
     });
   }
 
@@ -125,6 +125,21 @@ class Chart {
       context.strokeStyle = colors[id];
 
       canvasDrawLine(context, pointsLines[id]);
+    });
+  }
+
+  drawValueLinesAxisY(context: Object, params: Object) {
+    const { pointsStepSectionY } = params;
+    const offsetY = 8;
+
+    context.font = '18px Arial';
+    context.fillStyle = '#546778';
+
+    pointsStepSectionY.forEach((step) => {
+      const { value, points } = step;
+      const firstPoint = points[0];
+
+      context.fillText(value, firstPoint[0], firstPoint[1] - offsetY);
     });
   }
 
