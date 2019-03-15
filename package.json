@@ -31,6 +31,7 @@
     "flow": "^0.2.3",
     "flow-bin": "^0.94.0",
     "style-loader": "^0.23.1",
+    "uglifyjs-webpack-plugin": "^2.1.2",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.2.3",
     "webpack-dev-server": "^3.2.1"

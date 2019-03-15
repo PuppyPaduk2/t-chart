@@ -1,34 +1,28 @@
 // @flow
 
-type Params = {
+type Params = {  
   size: { width: number, height: number },
+  stepsSectionsY: Array<number>,
   stepSectionY: number,
-  countSectionsY: number,
 };
 
 export default (params: Params) => {
-  const {
-    size,
-    stepSectionY,
-    countSectionsY,
-  } = params;
+  const { size, stepsSectionsY, stepSectionY } = params;
   const { width, height } = size;
-  const result = [];
+  const firstStep = stepsSectionsY[0];
+  const maxStepSectionY = stepsSectionsY[stepsSectionsY.length - 1]
+    + stepSectionY;
   const widthPercentY = height / 100;
-  const maxStepSectionY = stepSectionY * countSectionsY;
 
-  for (let index = 0; index < countSectionsY; index++) {
-    const value = stepSectionY * index;
-    const y = value / maxStepSectionY * 100 * widthPercentY
+  return stepsSectionsY.reduce((result, step) => {
+    const percentY = (step - firstStep) / (maxStepSectionY - firstStep) * 100;
+    const y = height - (percentY * widthPercentY);
 
     result.push({
-      value,
-      points: [
-        [0, y],
-        [width, y],
-      ]
+      value: step,
+      points: [ [0, y], [width, y] ],
     });
-  }
 
-  return result;
+    return result;
+  }, []);
 };

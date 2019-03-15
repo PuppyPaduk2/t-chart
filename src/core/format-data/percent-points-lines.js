@@ -9,9 +9,8 @@ type Params = {
   statusLine: Object,
   types: Object,
   period: [number, number],
-  border: { min: number, max: number },
   stepSectionY: number,
-  countSectionsY: number,
+  stepsSectionsY: Array<number>,
 };
 
 export default (params: Params) => {
@@ -20,13 +19,12 @@ export default (params: Params) => {
     statusLine,
     types,
     period,
-    border,
     stepSectionY,
-    countSectionsY,
+    stepsSectionsY,
   } = params;
-  const borderMaxSectionY = stepSectionY * countSectionsY;
-
-  console.log(borderMaxSectionY);
+  const firstStepSectionY = stepsSectionsY[0];
+  const maxStepSectionY = stepsSectionsY[stepsSectionsY.length - 1]
+    + stepSectionY;
 
   return columns.reduce((result, column) => {
     const id = column[0];
@@ -36,7 +34,7 @@ export default (params: Params) => {
         .reduce((columnResult, value, index) => {
           columnResult.push([
             percentX(column, index),
-            value / borderMaxSectionY * 100,
+            (value - firstStepSectionY) / (maxStepSectionY - firstStepSectionY) * 100,
           ]);
 
           return columnResult;

@@ -1,4 +1,5 @@
 const CopyPlugin = require('copy-webpack-plugin');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = {
   output: {
@@ -27,12 +28,18 @@ module.exports = {
       use: ['style-loader', 'css-loader'],
     }],
   },
-  mode: 'development',
+  mode: 'development', // production
   plugins: [
     new CopyPlugin([
       { from: 'public', to: '.' },
     ]),
   ],
+  optimization: {
+    minimizer: [new UglifyJsPlugin({
+      cache: true,
+      sourceMap: true,
+    })],
+  },
   devServer: {
     writeToDisk: true,
     port: 5000,

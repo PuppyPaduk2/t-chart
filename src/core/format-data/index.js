@@ -6,6 +6,7 @@ import getPercentPointsLines from './percent-points-lines';
 import getPointLines from './points-lines';
 import getStepSectionY from './step-section-y';
 import getPointsStepSectionY from './points-step-section-y';
+import getStepsSectionsY from './steps-sections-y';
 
 type Params = {
   size: { width: number, height: number },
@@ -24,26 +25,32 @@ export default (params: Params) => {
       count: countSectionsY,
       border,
     });
-    const percentPoints = getPercentPointsLines({
-      ...params,
+    const stepsSectionsY = getStepsSectionsY({
       border,
       stepSectionY,
     });
+    const pointsStepSectionY = getPointsStepSectionY({
+      ...params,
+      stepSectionY,
+      stepsSectionsY,
+    });
+
+    const percentPoints = getPercentPointsLines({
+      ...params,
+      stepSectionY,
+      stepsSectionsY,
+    });
+
     const pointsLines = getPointLines({
       ...params,
       border,
       percentPoints,
     });
-    const pointsStepSectionY = getPointsStepSectionY({
-      ...params,
-      stepSectionY,
-      countSectionsY,
-    });
 
     console.log(
-      border,
       stepSectionY,
-      pointsStepSectionY,
+      border,
+      stepsSectionsY,
     );
 
     return {

@@ -100,29 +100,31 @@ class Chart {
     }, 'drawChart');
   }
 
+  drawLinesAxisY(context: Object, params: Object) {
+    const { pointsStepSectionY } = params;
+
+    context.lineWidth = 1;
+    context.lineCap = 'square';
+    context.strokeStyle = '#2D3A4A';
+
+    pointsStepSectionY.forEach((step) => {
+      const { points } = step;
+
+      canvasDrawLine(context, points);
+    });
+  }
+
   drawLines(context: Object, params: Object) {
     const { pointsLines, colors } = params;
 
     context.lineWidth = 2;
+    context.lineCap = 'butt';
     context.lineJoin = 'round';
 
     Object.keys(pointsLines).forEach((id) => {
       context.strokeStyle = colors[id];
 
       canvasDrawLine(context, pointsLines[id]);
-    });
-  }
-
-  drawLinesAxisY(context: Object, params: Object) {
-    const { pointsStepSectionY } = params;
-
-    context.lineWidth = 1;
-    context.strokeStyle = '#2d3A4A';
-
-    pointsStepSectionY.forEach((step) => {
-      const { points } = step;
-
-      canvasDrawLine(context, points);
     });
   }
 
