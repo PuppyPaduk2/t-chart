@@ -1,6 +1,6 @@
 // @flow
 
-import checkTime from '../check-time';
+import checkTime from '../../../core/check-time';
 import getBorderValueLines from './border-value-lines';
 import getPercentPointsLines from './percent-points-lines';
 import getPointLines from './points-lines';

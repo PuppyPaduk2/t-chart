@@ -2,11 +2,13 @@
 
 import createElement from '../../core/create-element';
 import createState from '../../core/create-state';
-import getFormatData from '../../core/format-data';
 import canvasDrawLine from '../../core/canvas-draw/line';
 import canvasDrawHorizontalAxis from '../../core/canvas-draw/horizontal-axis';
 import checkTime from '../../core/check-time';
 import ToggleButtonLine from '../ToggleButtonLine';
+import dataToChartConfig from './data-to-chart-config';
+import Content from './Content';
+import Map from './Map';
 import './styles.css';
 
 type Props = {
@@ -43,16 +45,14 @@ class Chart {
   constructor(props: Props) {
     this.props = props;
     this.state = createState({
-      sizeChart: { width: 700, height: 450 },
-      sizeMap: { width: 700, height: 50 },
-      period: [0, 100],
+      sizes: {
+        space: 8,
+        chart: { width: 700, height: 450 },
+        map: { width: 700, height: 50 },
+      },
+      period: [35, 65],
       statusLine: {},
       countSectionsY: 6,
-    });
-
-    this.state.subscribe((prevState, nextState) => {
-      this.drawChartContent();
-      this.drawChartMap();
     });
 
     this.createContainer();
@@ -83,7 +83,7 @@ class Chart {
     const { data } = this.props;
     const { columns, types } = data;
 
-    return  getFormatData({
+    return dataToChartConfig({
       size,
       period,
       columns,
@@ -94,129 +94,23 @@ class Chart {
   }
 
   createContent() {
-    this.content = createElement({
-      className: 'chart-content',
+    const { data } = this.props;
+
+    new Content({
       owner: this.container,
-    });
-
-    this.contentCanvas = createElement({
-      tagName: 'canvas',
-      owner: this.content,
-    });
-
-    this.drawChartContent();
-  }
-
-  drawChartContent() {
-    checkTime(() => {
-      const { sizeChart, period } = this.state.getValue();
-      const { data } = this.props;
-      const { colors } = data;
-      const context = this.contentCanvas.getContext('2d');
-      const formatedData = this.buildFormatData(sizeChart, period);
-
-      setSizeCanvasContext(this.contentCanvas, sizeChart);
-
-      this.drawLinesAxisY(context, formatedData);
-      this.drawLines(context, { ...formatedData, colors });
-      this.drawValueLinesAxisY(context, formatedData);
-    }, 'drawChart');
-  }
-
-
-  drawLinesAxisY(context: Object, params: Object) {
-    const { pointsStepSectionY } = params;
-
-    context.fillStyle = '#2D3A4A';
-
-    pointsStepSectionY.forEach((step) => {
-      const { points } = step;
-
-      canvasDrawHorizontalAxis(context, points);
-    });
-  }
-
-  drawLines(context: Object, params: Object) {
-    const { pointsLines, colors } = params;
-
-    context.lineWidth = 2;
-    context.lineCap = 'butt';
-    context.lineJoin = 'round';
-
-    Object.keys(pointsLines).forEach((id) => {
-      context.strokeStyle = colors[id];
-
-      canvasDrawLine(context, pointsLines[id]);
-    });
-  }
-
-  drawValueLinesAxisY(context: Object, params: Object) {
-    const { pointsStepSectionY } = params;
-
-    context.font = '18px Arial';
-    context.fillStyle = '#546778';
-
-    pointsStepSectionY.forEach((step) => {
-      const { value, points } = step;
-      const firstPoint = points[0];
-
-      context.fillText(value, firstPoint[0], firstPoint[1] - spaceSize);
+      state: this.state,
+      data,
     });
   }
 
   createMap() {
-    const chartMap = createElement({
-      className: 'chart-map',
-      owner: this.container,
-    });
-
-    this.mapCanvas = createElement({
-      tagName: 'canvas',
-      owner: chartMap,
-    });
-
-    this.drawChartMap();
-  }
-
-  drawChartMap() {
-    const { sizeMap } = this.state.getValue();
     const { data } = this.props;
-    const { colors } = data;
-    const context = this.mapCanvas.getContext('2d');
-    const formatedData = this.buildFormatData(sizeMap, [0, 100]);
 
-    setSizeCanvasContext(this.mapCanvas, sizeMap);
-
-    this.drawLines(context, { ...formatedData, colors });
-    this.drawChartFrameMap(context);
-  }
-
-  drawChartFrameMap(context: Object, params: Object) {
-    const { sizeMap, period } = this.state.getValue();
-    const { height, width } = sizeMap;
-    const percentWidth = width / 100;
-    const offsetLeft = period[0] * percentWidth;
-    const offsetRight = (100 - period[1]) * percentWidth;
-    const border = spaceSize * 0.25;
-    const topBottomWidth = width - offsetRight - offsetLeft;
-
-    context.fillStyle = 'rgba(91, 119, 148, 0.5)';
-
-    console.log(offsetLeft, offsetRight);
-
-    // Top & bottom
-    context.fillRect(offsetLeft, 0, topBottomWidth, border);
-    context.fillRect(offsetLeft, height - border, topBottomWidth, border);
-
-    // Left & right
-    context.fillRect(offsetLeft, border, spaceSize, height - (border * 2));
-    context.fillRect(width - spaceSize - offsetRight, border, spaceSize, height - (border * 2));
-
-    // Black blocks
-    context.fillStyle = 'rgba(31, 42, 56, 0.7)';
-
-    context.fillRect(0, 0, offsetLeft, height);
-    context.fillRect(offsetLeft + topBottomWidth, 0, offsetRight, height);
+    new Map({
+      owner: this.container,
+      state: this.state,
+      data,
+    });
   }
 
   createTogglersBar() {
