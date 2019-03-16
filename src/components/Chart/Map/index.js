@@ -2,7 +2,6 @@
 
 import createElement from '../../../core/create-element';
 import dragDrop from '../../../core/drag-drop';
-import checkTime from '../../../core/check-time';
 import canvasDrawLines from '../../../core/canvas-draw/lines';
 import setSizeCanvasContext from '../set-size-canvas-context';
 import dataToChartConfig from '../data-to-chart-config';
@@ -15,8 +14,11 @@ type Props = {
 
 class Map {
   props: Props
+
   canvas: Object
+
   config: Object
+
   configFrame: Object
 
   constructor(props: Props) {
@@ -48,9 +50,8 @@ class Map {
   }
 
   draw() {
-    const { data, state } = this.props;
+    const { state } = this.props;
     const { sizes } = state.getValue();
-    const { colors } = data;
     const context = this.canvas.getContext('2d');
 
     setSizeCanvasContext(this.canvas, sizes.map);
@@ -61,12 +62,7 @@ class Map {
 
   getConfig() {
     const { data, state } = this.props;
-    const {
-      sizes,
-      period,
-      statusLine,
-      countSectionsAxis,
-    } = state.getValue();
+    const { sizes, statusLine, countSectionsAxis } = state.getValue();
     const { columns, types } = data;
 
     return dataToChartConfig({
@@ -81,10 +77,11 @@ class Map {
 
   drawLines(context: Object, config: Object) {
     const { data } = this.props;
+    const ctx = context;
 
-    context.lineWidth = 2;
-    context.lineCap = 'butt';
-    context.lineJoin = 'round';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'butt';
+    ctx.lineJoin = 'round';
 
     canvasDrawLines({
       context,
@@ -94,19 +91,21 @@ class Map {
   }
 
   drawFrame(context: Object) {
+    const ctx = context;
+
     this.configFrame = this.getConfigFrame();
 
-    context.fillStyle = 'rgba(91, 119, 148, 0.5)';
+    ctx.fillStyle = 'rgba(91, 119, 148, 0.5)';
 
     // Top & bottom
     this.configFrame.blocks.border
-      .forEach(border => context.fillRect(...border));
+      .forEach(border => ctx.fillRect(...border));
 
     // Black blocks
-    context.fillStyle = 'rgba(31, 42, 56, 0.7)';
+    ctx.fillStyle = 'rgba(31, 42, 56, 0.7)';
 
     this.configFrame.blocks.shadow
-      .forEach(border =>  context.fillRect(...border));
+      .forEach(border => ctx.fillRect(...border));
   }
 
   getConfigFrame() {
@@ -142,7 +141,7 @@ class Map {
         offset.left, // left shadow block
         offset.left + widthTriggers, // left trigger
         offset.left + frameWidth - widthTriggers, // frame
-        offset.left + frameWidth, // right trigger 
+        offset.left + frameWidth, // right trigger
         width, // right shadow block
       ],
       mapNote: [
@@ -175,7 +174,7 @@ class Map {
     const { offsetX } = eventStart;
     let index = 0;
 
-    for (index = 0; index < map.length; index++) {
+    for (index = 0; index < map.length; index += 1) {
       if (offsetX < map[index]) {
         break;
       }
@@ -188,16 +187,18 @@ class Map {
   }
 
   onMoveDragDrop = (params: Object) => {
-    const { stateStart, eventDiff, eventStart } = params;
+    const { stateStart, eventDiffPrev } = params;
     const { eventObject } = stateStart;
     const { name } = eventObject;
 
-    if (name === 'shadow') {
-      this.onMoveDragDropShadow(params);
-    } else if (name === 'frame') {
-      this.onMoveDragDropFrame(params);
-    } else if (name === 'trigger') {
-      this.onMoveDragDropTrigger(params);
+    if (eventDiffPrev.offsetX !== 0) {
+      if (name === 'shadow') {
+        this.onMoveDragDropShadow(params);
+      } else if (name === 'frame') {
+        this.onMoveDragDropFrame(params);
+      } else if (name === 'trigger') {
+        this.onMoveDragDropTrigger(params);
+      }
     }
   }
 
@@ -285,13 +286,12 @@ class Map {
     const { name } = eventObject;
 
     if (name === 'shadow' || name === 'frame') {
-      const { state } = this.props;
       const { offsetX } = eventClick;
       const percentOffsetX = this.getPercentOffsetX(offsetX);
       const percentDiff = 3;
       const period = [
         percentOffsetX - percentDiff,
-        percentOffsetX + percentDiff
+        percentOffsetX + percentDiff,
       ];
 
       period[0] = period[0] > 0 ? period[0] : 0;
@@ -302,7 +302,7 @@ class Map {
   }
 
   onDbclickDragDrop = (params: Object) => {
-    const { eventClick, stateStart } = params;
+    const { stateStart } = params;
     const { eventObject } = stateStart;
     const { name } = eventObject;
 
@@ -321,7 +321,7 @@ class Map {
     const { sizes } = state.getValue();
     const { width } = sizes.map;
 
-    return parseInt(value / width * 100, 10);
+    return value / width * 100;
   }
 
   setStatePeriod(period: [number, number]) {

@@ -17,12 +17,14 @@ export default (params: Params) => {
     onDbclick,
   } = listeners;
   let eventStart = null;
+  let eventMovePrev = null;
   let stateStart = null;
   let status = null;
   let prev = null;
 
   const reset = () => {
     eventStart = null;
+    eventMovePrev = null;
     status = null;
     stateStart = null;
   };
@@ -35,6 +37,7 @@ export default (params: Params) => {
 
         if (target === owner) {
           eventStart = e;
+          eventMovePrev = e;
           status = 'start';
 
           if (onStart) {
@@ -46,7 +49,7 @@ export default (params: Params) => {
       },
 
       mousemove: (eventMove) => {
-        if (eventStart && onMove) {
+        if (eventStart && eventMovePrev && onMove) {
           status = 'move';
 
           onMove({
@@ -55,6 +58,12 @@ export default (params: Params) => {
               clientY: eventMove.clientY - eventStart.clientY,
               offsetX: eventMove.offsetX - eventStart.offsetX,
               offsetY: eventMove.offsetY - eventStart.offsetY,
+            },
+            eventDiffPrev: {
+              clientX: eventMove.clientX - eventMovePrev.clientX,
+              clientY: eventMove.clientY - eventMovePrev.clientY,
+              offsetX: eventMove.offsetX - eventMovePrev.offsetX,
+              offsetY: eventMove.offsetY - eventMovePrev.offsetY,
             },
             eventStart,
             eventMove,
@@ -93,7 +102,7 @@ export default (params: Params) => {
 
           reset();
         }
-      }
+      },
     },
   });
 };
