@@ -38,77 +38,10 @@ class Map {
     this.canvas = createElement({
       tagName: 'canvas',
       owner: chartMap,
-      listeners: {
-        mousemove: (e) => console.log('@mousemove'),
-        mousedown: (e) => console.log('@mousedown'),
-        mouseup: (e) => console.log('@mouseup'),
-        mouseover: (e) => console.log('@mouseover'),
-        mouseout: (e) => console.log('@mouseout'),
-      },
-    });
-
-    dragDrop({
-      owner: this.canvas,
-      listeners: {
-        onStart: ({ eventStart }) => {
-          const { map, mapNote } = this.configFrame;
-          const { offsetX } = eventStart;
-          let index = 0;
-
-          for (index = 0; index < map.length; index++) {
-            if (offsetX < map[index]) {
-              break;
-            }
-          }
-
-          return mapNote[index];
-        },
-
-        onMove: ({ eventDiff, stateStart }) => {
-          console.log('@onMove', stateStart);
-        },
-
-        onClick: ({ eventClick, stateStart }) => {
-          const { name } = stateStart;
-
-          if (name === 'shadow' || name === 'frame') {
-            const { offsetX } = eventClick;
-            const { state } = this.props;
-            const { sizes } = state.getValue();
-            const { width } = sizes.map;
-            const percentOffsetX = parseInt(offsetX / width * 100, 10);
-            const percentDiff = 3;
-            const period = [
-              percentOffsetX - percentDiff,
-              percentOffsetX + percentDiff
-            ];
-
-            period[0] = period[0] > 0 ? period[0] : 0;
-            period[1] = period[1] < 100 ? period[1] : 100;
-
-            state.setValue({
-              ...state.getValue(),
-              period,
-            });
-          }
-        },
-
-        onDbclick: ({ eventClick, stateStart }) => {
-          const { name } = stateStart;
-
-          if (name === 'frame') {
-            const { state } = this.props;
-
-            state.setValue({
-              ...state.getValue(),
-              period: [0, 100],
-            });
-          }
-        },
-      },
     });
 
     this.draw();
+    this.listenDragDrop();
   }
 
   draw() {
@@ -213,6 +146,184 @@ class Map {
         { name: 'shadow', position: 'right' },
       ],
     };
+  }
+
+  listenDragDrop() {
+    dragDrop({
+      owner: this.canvas,
+      listeners: {
+        onStart: this.onStartDragDrop,
+        onMove: this.onMoveDragDrop,
+        onClick: this.onClickDragDrop,
+        onDbclick: this.onDbclickDragDrop,
+      },
+    });
+  }
+
+  onStartDragDrop = (params: Object) => {
+    const { eventStart } = params;
+    const { state } = this.props;
+    const { period } = state.getValue();
+    const { map, mapNote } = this.configFrame;
+    const { offsetX } = eventStart;
+    let index = 0;
+
+    for (index = 0; index < map.length; index++) {
+      if (offsetX < map[index]) {
+        break;
+      }
+    }
+
+    return {
+      eventObject: mapNote[index],
+      period,
+    };
+  }
+
+  onMoveDragDrop = (params: Object) => {
+    const { stateStart, eventDiff, eventStart } = params;
+    const { eventObject } = stateStart;
+    const { name } = eventObject;
+
+    if (name === 'shadow') {
+      this.onMoveDragDropShadow(params);
+    } else if (name === 'frame') {
+      this.onMoveDragDropFrame(params);
+    } else if (name === 'trigger') {
+      this.onMoveDragDropTrigger(params);
+    }
+  }
+
+  onMoveDragDropShadow(params: Object) {
+    const { eventDiff, eventStart } = params;
+    const percentStart = this.getPercentOffsetX(eventStart.offsetX);
+    const percentDiff = this.getPercentOffsetX(eventDiff.offsetX);
+
+    if (percentDiff > 0) {
+      let borderRight = percentStart + percentDiff;
+
+      borderRight = borderRight < 100 ? borderRight : 100;
+
+      this.setStatePeriod([percentStart, borderRight]);
+    } else {
+      let borderLeft = percentStart + percentDiff;
+
+      borderLeft = borderLeft > 0 ? borderLeft : 0;
+
+      this.setStatePeriod([borderLeft, percentStart]);
+    }
+  }
+
+  onMoveDragDropFrame(params: Object) {
+    const { stateStart, eventDiff } = params;
+    const { period } = stateStart;
+    const percentDiff = this.getPercentOffsetX(eventDiff.offsetX);
+    const newPeriod = [period[0] + percentDiff, period[1] + percentDiff];
+
+    newPeriod[0] = newPeriod[0] > 0 ? newPeriod[0] : 0;
+    newPeriod[1] = newPeriod[1] < 100 ? newPeriod[1] : 100;
+
+    if ((period[1] - period[0]) <= (newPeriod[1] - newPeriod[0])) {
+      this.setStatePeriod(newPeriod);
+    }
+  }
+
+  onMoveDragDropTrigger(params: Object) {
+    const { stateStart } = params;
+    const { eventObject } = stateStart;
+    const { position } = eventObject;
+
+    if (position === 'left') {
+      this.onMoveDragDropTriggerLeft(params);
+    } else {
+      this.onMoveDragDropTriggerRight(params);
+    }
+  }
+
+  onMoveDragDropTriggerLeft(params: Object) {
+    const { stateStart, eventDiff } = params;
+    const { period } = stateStart;
+    const percentDiff = this.getPercentOffsetX(eventDiff.offsetX);
+    let borderLeft = period[0] + percentDiff;
+
+    borderLeft = borderLeft > 0 ? borderLeft : 0;
+    borderLeft = borderLeft < 100 ? borderLeft : 100;
+
+    if (borderLeft <= period[1]) {
+      this.setStatePeriod([borderLeft, period[1]]);
+    } else {
+      this.setStatePeriod([period[1], borderLeft]);
+    }
+  }
+
+  onMoveDragDropTriggerRight(params: Object) {
+    const { stateStart, eventDiff } = params;
+    const { period } = stateStart;
+    const percentDiff = this.getPercentOffsetX(eventDiff.offsetX);
+    let borderRight = period[1] + percentDiff;
+
+    borderRight = borderRight > 0 ? borderRight : 0;
+    borderRight = borderRight < 100 ? borderRight : 100;
+
+    if (borderRight >= period[0]) {
+      this.setStatePeriod([period[0], borderRight]);
+    } else {
+      this.setStatePeriod([borderRight, period[0]]);
+    }
+  }
+
+  onClickDragDrop = (params: Object) => {
+    const { eventClick, stateStart } = params;
+    const { eventObject } = stateStart;
+    const { name } = eventObject;
+
+    if (name === 'shadow' || name === 'frame') {
+      const { state } = this.props;
+      const { offsetX } = eventClick;
+      const percentOffsetX = this.getPercentOffsetX(offsetX);
+      const percentDiff = 3;
+      const period = [
+        percentOffsetX - percentDiff,
+        percentOffsetX + percentDiff
+      ];
+
+      period[0] = period[0] > 0 ? period[0] : 0;
+      period[1] = period[1] < 100 ? period[1] : 100;
+
+      this.setStatePeriod(period);
+    }
+  }
+
+  onDbclickDragDrop = (params: Object) => {
+    const { eventClick, stateStart } = params;
+    const { eventObject } = stateStart;
+    const { name } = eventObject;
+
+    if (name === 'frame') {
+      const { state } = this.props;
+
+      state.setValue({
+        ...state.getValue(),
+        period: [0, 100],
+      });
+    }
+  }
+
+  getPercentOffsetX(value: number) {
+    const { state } = this.props;
+    const { sizes } = state.getValue();
+    const { width } = sizes.map;
+
+    return parseInt(value / width * 100, 10);
+  }
+
+  setStatePeriod(period: [number, number]) {
+    const { state } = this.props;
+
+    state.setValue({
+      ...state.getValue(),
+      period,
+    });
   }
 }
 
