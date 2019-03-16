@@ -16,6 +16,7 @@ type Props = {
 class Map {
   props: Props
   canvas: Object
+  config: Object
   configFrame: Object
 
   constructor(props: Props) {
@@ -24,6 +25,8 @@ class Map {
     this.props = props;
 
     state.subscribe(() => this.draw());
+
+    this.config = this.getConfig();
 
     this.render();
   }
@@ -49,17 +52,21 @@ class Map {
     const { sizes } = state.getValue();
     const { colors } = data;
     const context = this.canvas.getContext('2d');
-    const config = this.getConfig();
 
     setSizeCanvasContext(this.canvas, sizes.map);
 
-    this.drawLines(context, config);
+    this.drawLines(context, this.config);
     this.drawFrame(context);
   }
 
   getConfig() {
     const { data, state } = this.props;
-    const { sizes, period, statusLine, countSectionsY } = state.getValue();
+    const {
+      sizes,
+      period,
+      statusLine,
+      countSectionsAxis,
+    } = state.getValue();
     const { columns, types } = data;
 
     return dataToChartConfig({
@@ -68,7 +75,7 @@ class Map {
       columns,
       statusLine,
       types,
-      countSectionsY,
+      countSectionsAxis,
     });
   }
 

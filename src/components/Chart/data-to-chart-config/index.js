@@ -7,6 +7,7 @@ import getPointLines from './points-lines';
 import getStepSectionY from './step-section-y';
 import getPointsStepSectionY from './points-step-section-y';
 import getStepsSectionsY from './steps-sections-y';
+import getPointsSectionsX from './points-step-sections-x';
 
 type Params = {
   size: { width: number, height: number },
@@ -14,48 +15,45 @@ type Params = {
   columns: Array<Array<any>>,
   statusLine: Object,
   types: Object,
-  countSectionsY: number,
+  countSectionsAxis: { x: number, y: number },
 };
 
-export default (params: Params) => {
-  return checkTime(() => {
-    const { columns, countSectionsY } = params;
-    const border = getBorderValueLines(params);
-    const stepSectionY = getStepSectionY({
-      count: countSectionsY,
-      border,
-    });
-    const stepsSectionsY = getStepsSectionsY({
-      border,
-      stepSectionY,
-    });
-    const pointsStepSectionY = getPointsStepSectionY({
-      ...params,
-      stepSectionY,
-      stepsSectionsY,
-    });
+export default (params: Params) => checkTime(() => {
+  const { countSectionsAxis } = params;
+  const border = getBorderValueLines(params);
+  const stepSectionY = getStepSectionY({
+    count: countSectionsAxis.y,
+    border,
+  });
+  const stepsSectionsY = getStepsSectionsY({
+    border,
+    stepSectionY,
+  });
+  const pointsStepSectionY = getPointsStepSectionY({
+    ...params,
+    stepSectionY,
+    stepsSectionsY,
+  });
 
-    const percentPoints = getPercentPointsLines({
-      ...params,
-      stepSectionY,
-      stepsSectionsY,
-    });
+  const percentPoints = getPercentPointsLines({
+    ...params,
+    stepSectionY,
+    stepsSectionsY,
+  });
 
-    const pointsLines = getPointLines({
-      ...params,
-      border,
-      percentPoints,
-    });
+  const pointsLines = getPointLines({
+    ...params,
+    border,
+    percentPoints,
+  });
 
-    // console.log(
-    //   stepSectionY,
-    //   border,
-    //   stepsSectionsY,
-    // );
+  const pointStepSectionsX = getPointsSectionsX({
+    ...params,
+  });
 
-    return {
-      pointsLines,
-      pointsStepSectionY,
-    };
-  }, 'formatData');
-};
+  return {
+    pointsLines,
+    pointsStepSectionY,
+    pointStepSectionsX,
+  };
+}, 'formatData');

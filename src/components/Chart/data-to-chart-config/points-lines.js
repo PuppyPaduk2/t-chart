@@ -19,11 +19,12 @@ export default (params: Params) => {
   return Object.keys(percentPoints).reduce((result, id) => {
     const column = percentPoints[id];
 
-    result[id] = column.map((precentPoint) => ([
-      precentPoint[0] * widthPercentX,
-      height - (precentPoint[1] * widthPercentY),
-    ]));
-
-    return result;
+    return {
+      ...result,
+      [id]: column.map(precentPoint => ([
+        precentPoint[0] * widthPercentX,
+        height - (precentPoint[1] * widthPercentY),
+      ])),
+    };
   }, {});
 };

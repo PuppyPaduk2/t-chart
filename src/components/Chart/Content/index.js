@@ -15,6 +15,7 @@ type Props = {
 
 class Content {
   props: Props
+
   canvas: Object
 
   constructor(props: Props) {
@@ -44,9 +45,8 @@ class Content {
 
   draw() {
     checkTime(() => {
-      const { data, state } = this.props;
+      const { state } = this.props;
       const { sizes } = state.getValue();
-      const { colors } = data;
       const context = this.canvas.getContext('2d');
       const config = this.getConfig();
 
@@ -55,21 +55,30 @@ class Content {
       this.drawLinesAxisY(context, config);
       this.drawLines(context, config);
       this.drawValueLinesAxisY(context, config);
+      this.drawValueLinesAxisX(context, config);
     }, 'ChartContent.draw');
   }
 
   getConfig() {
     const { data, state } = this.props;
-    const { sizes, period, statusLine, countSectionsY } = state.getValue();
+    const {
+      sizes,
+      period,
+      statusLine,
+      countSectionsAxis,
+    } = state.getValue();
     const { columns, types } = data;
+    const size = { ...sizes.chart };
+
+    size.height -= sizes.heightAxisX;
 
     return dataToChartConfig({
-      size: sizes.chart,
+      size,
       period,
       columns,
       statusLine,
       types,
-      countSectionsY,
+      countSectionsAxis,
     });
   }
 
@@ -112,6 +121,22 @@ class Content {
       const firstPoint = points[0];
 
       context.fillText(value, firstPoint[0], firstPoint[1] - sizes.space);
+    });
+  }
+
+  drawValueLinesAxisX(context: Object, config: Object) {
+    const { state } = this.props;
+    const { sizes } = state.getValue();
+    const size = { ...sizes.chart };
+    const { pointStepSectionsX } = config;
+
+    context.font = '18px Arial';
+    context.fillStyle = '#546778';
+
+    pointStepSectionsX.forEach((step) => {
+      const { dateStr, left } = step;
+
+      context.fillText(dateStr, left, sizes.chart.height - sizes.space);
     });
   }
 }

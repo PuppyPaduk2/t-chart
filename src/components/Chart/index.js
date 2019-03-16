@@ -2,11 +2,7 @@
 
 import createElement from '../../core/create-element';
 import createState from '../../core/create-state';
-import canvasDrawLine from '../../core/canvas-draw/line';
-import canvasDrawHorizontalAxis from '../../core/canvas-draw/horizontal-axis';
-import checkTime from '../../core/check-time';
 import ToggleButtonLine from '../ToggleButtonLine';
-import dataToChartConfig from './data-to-chart-config';
 import Content from './Content';
 import Map from './Map';
 import './styles.css';
@@ -16,30 +12,15 @@ type Props = {
   data: Object,
 };
 
-type Size = {
-  width: number,
-  height: number,
-};
-
-type Period = [number, number];
-
-const spaceSize = 8;
-
-const setSizeCanvasContext = (canvas: Object, size: Size) => {
-  const { width, height } = size;
-
-  canvas.setAttribute('width', width.toString());
-  canvas.setAttribute('height', height.toString());
-
-  return canvas;
-};
-
 class Chart {
   container: Object
+
   content: Object
-  contentCanvas: Object
-  mapCanvas: Object
+
+  map: Object
+
   props: Props
+
   state: Object
 
   constructor(props: Props) {
@@ -48,11 +29,12 @@ class Chart {
       sizes: {
         space: 8,
         chart: { width: 700, height: 450 },
+        heightAxisX: 30,
         map: { width: 700, height: 50 },
       },
       period: [35, 65],
       statusLine: {},
-      countSectionsY: 6,
+      countSectionsAxis: { y: 6, x: 6 },
     });
 
     this.createContainer();
@@ -78,25 +60,10 @@ class Chart {
     });
   }
 
-  buildFormatData(size: Size, period: Period) {
-    const { statusLine, countSectionsY } = this.state.getValue();
-    const { data } = this.props;
-    const { columns, types } = data;
-
-    return dataToChartConfig({
-      size,
-      period,
-      columns,
-      statusLine,
-      types,
-      countSectionsY,
-    });
-  }
-
   createContent() {
     const { data } = this.props;
 
-    new Content({
+    this.content = new Content({
       owner: this.container,
       state: this.state,
       data,
@@ -106,7 +73,7 @@ class Chart {
   createMap() {
     const { data } = this.props;
 
-    new Map({
+    this.map = new Map({
       owner: this.container,
       state: this.state,
       data,
@@ -131,8 +98,6 @@ class Chart {
   }
 
   render() {
-    const { data } = this.props;
-
     this.createHeader();
     this.createContent();
     this.createMap();
