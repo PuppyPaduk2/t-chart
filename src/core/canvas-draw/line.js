@@ -1,13 +1,15 @@
 // @flow
 
-export default (context: Object, points: Array<[number, number]>) => {
+export default (context: Object, points: Array<any>) => {
   context.beginPath();
 
   points.forEach((point, index) => {
     if (index) {
-      context.lineTo(...point);
-    } else {
-      context.moveTo(...point);
+      if (index === 1) {
+        context.moveTo(...point);
+      } else {
+        context.lineTo(...point);
+      }
     }
   });
 

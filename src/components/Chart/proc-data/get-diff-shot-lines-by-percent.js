@@ -24,7 +24,7 @@ const getValuePointsYByPercent = (params: Object) => {
   return [[0, pointY], [nextShot.pointsY[index][1][0], pointY]];
 };
 
-export default (params: Object) => {
+const getDiffPointsY = (params: Object) => {
   const {
     prevShot,
     nextShot,
@@ -33,14 +33,7 @@ export default (params: Object) => {
   } = params;
   const { y } = data;
 
-  // console.log(
-  //   '@diffShotLines',
-  //   prevShot === nextShot,
-  //   prevShot,
-  //   nextShot,
-  // );
-
-  const pointsY = y.reduce((res, value, index) => {
+  return y.reduce((res, value, index) => {
     const points = getValuePointsYByPercent({
       prevShot,
       nextShot,
@@ -72,8 +65,33 @@ export default (params: Object) => {
 
     return res;
   }, []);
-
-  return {
-    pointsY,
-  };
 };
+
+const getDiffPointsLines = (params: Object) => {
+  const { prevShot, nextShot, percent } = params;
+
+  return prevShot.pointsLines.reduce((resLines, pointsLine, indexLine) => [
+    ...resLines,
+    pointsLine.reduce((resLine, pointLine, indexPoint) => {
+      if (indexPoint > 0) {
+        const nextPoint = nextShot.pointsLines[indexLine][indexPoint];
+
+        resLine.push([
+          nextPoint[0],
+          pointLine[1] + getValueByPercent(
+            pointLine[1],
+            nextPoint[1],
+            percent,
+          ),
+        ]);
+      }
+
+      return resLine;
+    }, [pointsLine[0]]),
+  ], []);
+};
+
+export default (params: Object) => ({
+  pointsY: getDiffPointsY(params),
+  pointsLines: getDiffPointsLines(params),
+});

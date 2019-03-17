@@ -39,6 +39,7 @@ class Chart {
       },
       period: [0, 100],
       statusLine: {},
+      hiddenLines: [],
       countSectionsAxis: { y: 6, x: 6 },
     });
     this.buildData = buildData(data, this.state.getValue());
@@ -115,6 +116,15 @@ class Chart {
       ...stateValue.statusLine,
       [id]: value,
     };
+
+    if (value === false) {
+      stateValue.hiddenLines.push(id);
+    } else {
+      stateValue.hiddenLines.splice(
+        stateValue.hiddenLines.indexOf(id),
+        1,
+      );
+    }
 
     this.state.setValue(stateValue);
   }

@@ -6,6 +6,7 @@ import getShotLines from '../proc-data/get-shot-lines';
 import getDiffShotLinesbyPercent from '../proc-data/get-diff-shot-lines-by-percent';
 import createTimer from '../../../core/create-timer';
 import canvasDrawHorizontalAxis from '../../../core/canvas-draw/horizontal-axis';
+import canvasDrawLine from '../../../core/canvas-draw/line';
 
 type Props = {
   data: Object,
@@ -91,6 +92,7 @@ class Content {
     context.clearRect(0, 0, width, height);
 
     this.drawY(context);
+    this.drawLines(context);
     this.drawValuesY(context);
   }
 
@@ -105,6 +107,28 @@ class Content {
 
       canvasDrawHorizontalAxis(context, points);
     });
+  }
+
+  drawLines = (context: Object) => {
+    const { data } = this.props;
+    const { originalData } = data;
+    const { colors } = originalData;
+    const ctx = context;
+    const { pointsLines } = this.diffShotLines;
+
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'butt';
+    ctx.lineJoin = 'round';
+
+    // console.log(pointsLines);
+
+    pointsLines.forEach((pointsLine) => {
+      ctx.strokeStyle = colors[pointsLine[0]];
+
+      canvasDrawLine(context, pointsLine);
+    });
+
+    // console.log(colors);
   }
 
   drawValuesY(context: Object) {
@@ -130,7 +154,7 @@ class Content {
 
     this.shotLines = this.getShotLines();
 
-    if (getLastValueShowY(this.shotLines) !== getLastValueShowY(prevShowLines)) {
+    // if (getLastValueShowY(this.shotLines) !== getLastValueShowY(prevShowLines)) {
       createTimer((time, percent) => {
         this.diffShotLines = this.getDiffShotLines(
           prevShowLines,
@@ -139,7 +163,7 @@ class Content {
 
         this.draw();
       }, 350);
-    }
+    // }
   }
 }
 
