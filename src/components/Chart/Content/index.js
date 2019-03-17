@@ -1,11 +1,11 @@
 // @flow
 
 import createElement from '../../../core/create-element';
-import checkTime from '../../../core/check-time';
-import canvasDrawLines from '../../../core/canvas-draw/lines';
-import canvasDrawHorizontalAxis from '../../../core/canvas-draw/horizontal-axis';
 import setSizeCanvasContext from '../set-size-canvas-context';
-import dataToChartConfig from '../data-to-chart-config';
+import getShotLines from '../proc-data/get-shot-lines';
+import getDiffShotLinesbyPercent from '../proc-data/get-diff-shot-lines-by-percent';
+import createTimer from '../../../core/create-timer';
+import canvasDrawHorizontalAxis from '../../../core/canvas-draw/horizontal-axis';
 
 type Props = {
   data: Object,
@@ -13,23 +13,36 @@ type Props = {
   state: Object,
 };
 
+const getRGBAColor = (r, g, b, a) => `rgba(${r}, ${g}, ${b}, ${a})`;
+const getLastValueShowY = (shot: Object) => {
+  const { showY } = shot;
+  const { values } = showY;
+
+  return values[values.length - 1];
+};
+
 class Content {
   props: Props
 
   canvas: Object
+
+  shotLines: Object
+
+  diffShotLines: Object
 
   constructor(props: Props) {
     const { state } = props;
 
     this.props = props;
 
-    state.subscribe(() => this.draw());
+    state.subscribe(() => this.redraw());
 
     this.render();
   }
 
   render() {
-    const { owner } = this.props;
+    const { owner, state } = this.props;
+    const { sizes } = state.getValue();
     const content = createElement({
       className: 'chart-content',
       owner,
@@ -40,104 +53,93 @@ class Content {
       owner: content,
     });
 
+    setSizeCanvasContext(this.canvas, sizes.chart);
+
+    this.shotLines = this.getShotLines();
+    this.diffShotLines = this.getDiffShotLines(
+      this.shotLines,
+      100,
+    );
+
     this.draw();
   }
 
-  draw() {
-    checkTime(() => {
-      const { state } = this.props;
-      const { sizes } = state.getValue();
-      const context = this.canvas.getContext('2d');
-      const config = this.getConfig();
+  getShotLines() {
+    const { data, state } = this.props;
 
-      setSizeCanvasContext(this.canvas, sizes.chart);
-
-      this.drawLinesAxisY(context, config);
-      this.drawLines(context, config);
-      this.drawValueLinesAxisY(context, config);
-      this.drawValueLinesAxisX(context, config);
-    }, 'ChartContent.draw');
+    return getShotLines(data, state.getValue());
   }
 
-  getConfig() {
+  getDiffShotLines(prevShot: Object, percent: number = 100) {
     const { data, state } = this.props;
-    const {
-      sizes,
-      period,
-      statusLine,
-      countSectionsAxis,
-    } = state.getValue();
-    const { columns, types } = data;
-    const size = { ...sizes.chart };
 
-    size.height -= sizes.heightAxisX;
-
-    return dataToChartConfig({
-      size,
-      period,
-      columns,
-      statusLine,
-      types,
-      countSectionsAxis,
+    return getDiffShotLinesbyPercent({
+      nextShot: this.shotLines,
+      state: state.getValue(),
+      prevShot,
+      percent,
+      data,
     });
   }
 
-  drawLinesAxisY(context: Object, config: Object) {
-    const { pointsStepSectionY } = config;
+  draw() {
+    const { state } = this.props;
+    const { sizes } = state.getValue();
+    const { width, height } = sizes.chart;
+    const context = this.canvas.getContext('2d');
 
-    context.fillStyle = '#2D3A4A';
+    context.clearRect(0, 0, width, height);
 
-    pointsStepSectionY.forEach((step) => {
-      const { points } = step;
+    this.drawY(context);
+    this.drawValuesY(context);
+  }
+
+  drawY(context: Object) {
+    const ctx = context;
+    const { pointsY } = this.diffShotLines;
+
+    pointsY.forEach((point) => {
+      const { points, opacity } = point;
+
+      ctx.fillStyle = getRGBAColor(52, 69, 90, opacity);
 
       canvasDrawHorizontalAxis(context, points);
     });
   }
 
-  drawLines(context: Object, config: Object) {
-    const { data } = this.props;
-
-    context.lineWidth = 2;
-    context.lineCap = 'butt';
-    context.lineJoin = 'round';
-
-    canvasDrawLines({
-      context,
-      config,
-      data,
-    });
-  }
-
-  drawValueLinesAxisY(context: Object, config: Object) {
+  drawValuesY(context: Object) {
     const { state } = this.props;
     const { sizes } = state.getValue();
-    const { pointsStepSectionY } = config;
+    const ctx = context;
+    const { pointsY } = this.diffShotLines;
 
-    context.font = '18px Arial';
-    context.fillStyle = '#546778';
+    ctx.font = '18px Arial';
 
-    pointsStepSectionY.forEach((step) => {
-      const { value, points } = step;
+    pointsY.forEach((point) => {
+      const { points, opacity, value } = point;
       const firstPoint = points[0];
+
+      ctx.fillStyle = getRGBAColor(52, 69, 90, opacity);
 
       context.fillText(value, firstPoint[0], firstPoint[1] - sizes.space);
     });
   }
 
-  drawValueLinesAxisX(context: Object, config: Object) {
-    const { state } = this.props;
-    const { sizes } = state.getValue();
-    const size = { ...sizes.chart };
-    const { pointStepSectionsX } = config;
+  redraw() {
+    const prevShowLines = this.shotLines;
 
-    context.font = '18px Arial';
-    context.fillStyle = '#546778';
+    this.shotLines = this.getShotLines();
 
-    pointStepSectionsX.forEach((step) => {
-      const { dateStr, left } = step;
+    if (getLastValueShowY(this.shotLines) !== getLastValueShowY(prevShowLines)) {
+      createTimer((time, percent) => {
+        this.diffShotLines = this.getDiffShotLines(
+          prevShowLines,
+          percent,
+        );
 
-      context.fillText(dateStr, left, sizes.chart.height - sizes.space);
-    });
+        this.draw();
+      }, 350);
+    }
   }
 }
 

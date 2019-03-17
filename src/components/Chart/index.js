@@ -5,6 +5,7 @@ import createState from '../../core/create-state';
 import ToggleButtonLine from '../ToggleButtonLine';
 import Content from './Content';
 import Map from './Map';
+import buildData from './proc-data/build';
 import './styles.css';
 
 type Props = {
@@ -21,9 +22,13 @@ class Chart {
 
   props: Props
 
+  buildData: Object
+
   state: Object
 
   constructor(props: Props) {
+    const { data } = props;
+
     this.props = props;
     this.state = createState({
       sizes: {
@@ -32,10 +37,11 @@ class Chart {
         heightAxisX: 30,
         map: { width: 700, height: 50 },
       },
-      period: [35, 65],
+      period: [0, 100],
       statusLine: {},
       countSectionsAxis: { y: 6, x: 6 },
     });
+    this.buildData = buildData(data, this.state.getValue());
 
     this.createContainer();
     this.render();
@@ -61,12 +67,10 @@ class Chart {
   }
 
   createContent() {
-    const { data } = this.props;
-
     this.content = new Content({
       owner: this.container,
       state: this.state,
-      data,
+      data: this.buildData,
     });
   }
 

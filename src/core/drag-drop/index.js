@@ -7,6 +7,13 @@ type Params = {
   listeners: Object,
 };
 
+const getEventsDiff = (event1, event2) => ({
+  clientX: event1.clientX - event2.clientX,
+  clientY: event1.clientY - event2.clientY,
+  offsetX: event1.offsetX - event2.offsetX,
+  offsetY: event1.offsetY - event2.offsetY,
+});
+
 export default (params: Params) => {
   const { owner, listeners } = params;
   const {
@@ -50,25 +57,19 @@ export default (params: Params) => {
 
       mousemove: (eventMove) => {
         if (eventStart && eventMovePrev && onMove) {
-          status = 'move';
+          const eventDiffPrev = getEventsDiff(eventMove, eventMovePrev);
 
-          onMove({
-            eventDiff: {
-              clientX: eventMove.clientX - eventStart.clientX,
-              clientY: eventMove.clientY - eventStart.clientY,
-              offsetX: eventMove.offsetX - eventStart.offsetX,
-              offsetY: eventMove.offsetY - eventStart.offsetY,
-            },
-            eventDiffPrev: {
-              clientX: eventMove.clientX - eventMovePrev.clientX,
-              clientY: eventMove.clientY - eventMovePrev.clientY,
-              offsetX: eventMove.offsetX - eventMovePrev.offsetX,
-              offsetY: eventMove.offsetY - eventMovePrev.offsetY,
-            },
-            eventStart,
-            eventMove,
-            stateStart,
-          });
+          if (eventDiffPrev.offsetX !== 0 || eventDiffPrev.offsetY !== 0) {
+            status = 'move';
+
+            onMove({
+              eventDiff: getEventsDiff(eventMove, eventMovePrev),
+              eventStart,
+              eventMove,
+              stateStart,
+              eventDiffPrev,
+            });
+          }
         }
       },
 
