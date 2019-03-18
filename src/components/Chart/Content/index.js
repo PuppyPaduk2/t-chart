@@ -1,26 +1,20 @@
 // @flow
 
 import createElement from '../../../core/create-element';
-import setSizeCanvasContext from '../set-size-canvas-context';
 import getShotLines from '../proc-data/get-shot-lines';
 import getDiffShotLinesbyPercent from '../proc-data/get-diff-shot-lines-by-percent';
 import createTimer from '../../../core/create-timer';
-import canvasDrawHorizontalAxis from '../../../core/canvas-draw/horizontal-axis';
-import canvasDrawLine from '../../../core/canvas-draw/line';
+import drawLines from '../../../core/draw/lines';
+import drawY from '../../../core/draw/y';
+import drawValuesY from '../../../core/draw/values-y';
+import drawClear from '../../../core/draw/clear';
+import setSizeCanvas from '../../../core/set-size-canvas';
 
 type Props = {
   data: Object,
   owner: Object,
   state: Object,
 };
-
-const hexToRgb = (value: string) => [
-  parseInt(value.slice(1, 3), 16),
-  parseInt(value.slice(3, 5), 16),
-  parseInt(value.slice(5, 7), 16),
-];
-
-const getRgba = (r, g, b, a) => `rgba(${r}, ${g}, ${b}, ${a})`;
 
 class Content {
   props: Props
@@ -56,7 +50,7 @@ class Content {
       owner: content,
     });
 
-    setSizeCanvasContext(this.canvas, sizes.chart);
+    setSizeCanvas(this.canvas, sizes.chart);
 
     this.shotLines = this.getShotLines();
     this.diffShotLines = this.getDiffShotLines(
@@ -87,67 +81,21 @@ class Content {
   }
 
   draw() {
-    const { state } = this.props;
-    const { sizes } = state.getValue();
-    const { width, height } = sizes.chart;
+    const { state, data } = this.props;
+    const stateValue = state.getValue();
+    const { sizes } = stateValue;
     const context = this.canvas.getContext('2d');
+    const params = {
+      diffShotLines: this.diffShotLines,
+      state: stateValue,
+      context,
+      data,
+    };
 
-    context.clearRect(0, 0, width, height);
-
-    this.drawY(context, this.diffShotLines);
-    this.drawLines(context, this.diffShotLines);
-    this.drawValuesY(context, this.diffShotLines);
-  }
-
-  drawY = (context: Object, diffShotLines: Object) => {
-    const ctx = context;
-    const { pointsY } = diffShotLines;
-
-    pointsY.forEach((point) => {
-      const { points, opacity } = point;
-
-      ctx.fillStyle = getRgba(...hexToRgb('#293544'), opacity);
-
-      canvasDrawHorizontalAxis(context, points);
-    });
-  }
-
-  drawLines = (context: Object, diffShotLines: Object) => {
-    const { data } = this.props;
-    const { originalData } = data;
-    const { colors } = originalData;
-    const ctx = context;
-    const { pointsLines } = diffShotLines;
-
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'butt';
-    ctx.lineJoin = 'round';
-
-    pointsLines.forEach((pointsLine) => {
-      const { points, opacity } = pointsLine;
-
-      ctx.strokeStyle = getRgba(...hexToRgb(colors[points[0]]), opacity);
-
-      canvasDrawLine(context, points);
-    });
-  }
-
-  drawValuesY = (context: Object, diffShotLines: Object) => {
-    const { state } = this.props;
-    const { sizes } = state.getValue();
-    const ctx = context;
-    const { pointsY } = diffShotLines;
-
-    ctx.font = '18px Arial';
-
-    pointsY.forEach((point) => {
-      const { points, opacity, value } = point;
-      const firstPoint = points[0];
-
-      ctx.fillStyle = getRgba(...hexToRgb('#526475'), opacity);
-
-      context.fillText(value, firstPoint[0], firstPoint[1] - sizes.space);
-    });
+    drawClear(context, sizes.chart);
+    drawY(params);
+    drawLines(params);
+    drawValuesY(params);
   }
 
   redraw() {

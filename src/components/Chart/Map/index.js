@@ -2,7 +2,7 @@
 
 import createElement from '../../../core/create-element';
 import dragDrop from '../../../core/drag-drop';
-import canvasDrawLines from '../../../core/canvas-draw/lines';
+// import canvasDrawLines from '../../../core/draw/lines';
 import setSizeCanvasContext from '../set-size-canvas-context';
 import dataToChartConfig from '../data-to-chart-config';
 
@@ -83,11 +83,11 @@ class Map {
     ctx.lineCap = 'butt';
     ctx.lineJoin = 'round';
 
-    canvasDrawLines({
-      context,
-      config,
-      data,
-    });
+    // canvasDrawLines({
+    //   context,
+    //   config,
+    //   data,
+    // });
   }
 
   drawFrame(context: Object) {
