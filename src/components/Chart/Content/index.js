@@ -14,13 +14,13 @@ type Props = {
   state: Object,
 };
 
-const getRGBAColor = (r, g, b, a) => `rgba(${r}, ${g}, ${b}, ${a})`;
-const getLastValueShowY = (shot: Object) => {
-  const { showY } = shot;
-  const { values } = showY;
+const hexToRgb = (value: string) => [
+  parseInt(value.slice(1, 3), 16),
+  parseInt(value.slice(3, 5), 16),
+  parseInt(value.slice(5, 7), 16),
+];
 
-  return values[values.length - 1];
-};
+const getRgba = (r, g, b, a) => `rgba(${r}, ${g}, ${b}, ${a})`;
 
 class Content {
   props: Props
@@ -30,6 +30,8 @@ class Content {
   shotLines: Object
 
   diffShotLines: Object
+
+  timer: any
 
   constructor(props: Props) {
     const { state } = props;
@@ -77,6 +79,7 @@ class Content {
     return getDiffShotLinesbyPercent({
       nextShot: this.shotLines,
       state: state.getValue(),
+      statePrev: state.getPrevValue(),
       prevShot,
       percent,
       data,
@@ -91,51 +94,49 @@ class Content {
 
     context.clearRect(0, 0, width, height);
 
-    this.drawY(context);
-    this.drawLines(context);
-    this.drawValuesY(context);
+    this.drawY(context, this.diffShotLines);
+    this.drawLines(context, this.diffShotLines);
+    this.drawValuesY(context, this.diffShotLines);
   }
 
-  drawY(context: Object) {
+  drawY = (context: Object, diffShotLines: Object) => {
     const ctx = context;
-    const { pointsY } = this.diffShotLines;
+    const { pointsY } = diffShotLines;
 
     pointsY.forEach((point) => {
       const { points, opacity } = point;
 
-      ctx.fillStyle = getRGBAColor(52, 69, 90, opacity);
+      ctx.fillStyle = getRgba(...hexToRgb('#293544'), opacity);
 
       canvasDrawHorizontalAxis(context, points);
     });
   }
 
-  drawLines = (context: Object) => {
+  drawLines = (context: Object, diffShotLines: Object) => {
     const { data } = this.props;
     const { originalData } = data;
     const { colors } = originalData;
     const ctx = context;
-    const { pointsLines } = this.diffShotLines;
+    const { pointsLines } = diffShotLines;
 
     ctx.lineWidth = 2;
     ctx.lineCap = 'butt';
     ctx.lineJoin = 'round';
 
-    // console.log(pointsLines);
-
     pointsLines.forEach((pointsLine) => {
-      ctx.strokeStyle = colors[pointsLine[0]];
+      const { points, opacity } = pointsLine;
 
-      canvasDrawLine(context, pointsLine);
+      ctx.strokeStyle = getRgba(...hexToRgb(colors[points[0]]), opacity);
+
+      canvasDrawLine(context, points);
     });
-
-    // console.log(colors);
   }
 
-  drawValuesY(context: Object) {
+  drawValuesY = (context: Object, diffShotLines: Object) => {
     const { state } = this.props;
     const { sizes } = state.getValue();
     const ctx = context;
-    const { pointsY } = this.diffShotLines;
+    const { pointsY } = diffShotLines;
 
     ctx.font = '18px Arial';
 
@@ -143,7 +144,7 @@ class Content {
       const { points, opacity, value } = point;
       const firstPoint = points[0];
 
-      ctx.fillStyle = getRGBAColor(52, 69, 90, opacity);
+      ctx.fillStyle = getRgba(...hexToRgb('#526475'), opacity);
 
       context.fillText(value, firstPoint[0], firstPoint[1] - sizes.space);
     });
@@ -151,19 +152,23 @@ class Content {
 
   redraw() {
     const prevShowLines = this.shotLines;
+    const duration = 250;
 
     this.shotLines = this.getShotLines();
 
-    // if (getLastValueShowY(this.shotLines) !== getLastValueShowY(prevShowLines)) {
-      createTimer((time, percent) => {
+    if (!this.timer) {
+      this.timer = createTimer((time, percent) => {
         this.diffShotLines = this.getDiffShotLines(
           prevShowLines,
           percent,
         );
 
         this.draw();
-      }, 350);
-    // }
+      }, duration).then(() => {
+        this.timer = null;
+        return true;
+      });
+    }
   }
 }
 

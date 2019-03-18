@@ -68,27 +68,51 @@ const getDiffPointsY = (params: Object) => {
 };
 
 const getDiffPointsLines = (params: Object) => {
-  const { prevShot, nextShot, percent } = params;
+  const {
+    prevShot,
+    nextShot,
+    percent,
+    state,
+    statePrev,
+  } = params;
 
-  return prevShot.pointsLines.reduce((resLines, pointsLine, indexLine) => [
-    ...resLines,
-    pointsLine.reduce((resLine, pointLine, indexPoint) => {
-      if (indexPoint > 0) {
-        const nextPoint = nextShot.pointsLines[indexLine][indexPoint];
+  return prevShot.pointsLines.reduce((resLines, pointsLine, indexLine) => {
+    const id = pointsLine[0];
+    const nextIndex = state.hiddenLines.indexOf(id);
+    let opacity = nextIndex === -1 ? 1 : 0;
 
-        resLine.push([
-          nextPoint[0],
-          pointLine[1] + getValueByPercent(
-            pointLine[1],
-            nextPoint[1],
-            percent,
-          ),
-        ]);
+    if (statePrev.hiddenLines !== state.hiddenLines) {
+      const prevIndex = statePrev.hiddenLines.indexOf(id);
+
+      if (prevIndex !== nextIndex) {
+        if (nextIndex === -1) {
+          opacity = getValueByPercent(0, 1, percent);
+        } else {
+          opacity = 1 - getValueByPercent(0, 1, percent);
+        }
       }
+    }
 
-      return resLine;
-    }, [pointsLine[0]]),
-  ], []);
+    return [
+      ...resLines,
+      pointsLine.reduce((resLine, pointLine, indexPoint) => {
+        if (indexPoint > 0) {
+          const nextPoint = nextShot.pointsLines[indexLine][indexPoint];
+
+          resLine.points.push([
+            nextPoint[0],
+            pointLine[1] + getValueByPercent(
+              pointLine[1],
+              nextPoint[1],
+              percent,
+            ),
+          ]);
+        }
+
+        return resLine;
+      }, { points: [id], opacity }),
+    ];
+  }, []);
 };
 
 export default (params: Object) => ({

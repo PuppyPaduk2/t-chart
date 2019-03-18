@@ -8,13 +8,15 @@ type State = {
 
 function createState(defaultValue: any): State {
   let value = defaultValue;
+  let prevValue = defaultValue;
   const subscribers: Array<Function> = [];
 
   return {
     getValue: () => value,
+    getPrevValue: () => prevValue,
     setValue: (nextValue: any) => {
       if (value !== nextValue) {
-        const prevValue = value;
+        prevValue = value;
 
         value = nextValue;
 

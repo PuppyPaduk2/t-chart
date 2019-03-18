@@ -12,14 +12,15 @@ export default (showY: Object, originalData: Object, state: Object) => {
   const percentWidth = width / 100;
   const percentHeight = height / 100;
   const { period } = state;
+  const percentPeriod = (period[1] - period[0]) / 100;
 
   return lines.reduce((resLines, line) => [
     ...resLines,
     line.reduce((resLine, value, index) => {
       if (index !== 0) {
-        let percentX = (index - 1) / (line.length - 2) * 100;
+        let percentX = (index - 1) / (line.length - 2) * 100 / percentPeriod;
 
-        percentX = (percentX - period[0]) / period[1] * 100;
+        percentX -= period[0] / percentPeriod;
 
         const percentY = value / maxY * 100;
 

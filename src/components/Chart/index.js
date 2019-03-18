@@ -117,6 +117,8 @@ class Chart {
       [id]: value,
     };
 
+    stateValue.hiddenLines = [...stateValue.hiddenLines];
+
     if (value === false) {
       stateValue.hiddenLines.push(id);
     } else {
