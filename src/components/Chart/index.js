@@ -2,10 +2,13 @@
 
 import createElement from '../../core/create-element';
 import createState from '../../core/create-state';
+import createTimer from '../../core/create-timer';
 import ToggleButtonLine from '../ToggleButtonLine';
 import Content from './Content';
 import Map from './Map';
-import buildData from './proc-data/build';
+import createY from './proc-data/create-y';
+import getShotLines from './proc-data/get-shot-lines';
+import getDiffShotLinesbyPercent from './proc-data/get-diff-shot-lines-by-percent';
 import './styles.css';
 
 type Props = {
@@ -22,30 +25,81 @@ class Chart {
 
   props: Props
 
-  buildData: Object
+  y: Object
 
   state: Object
 
-  constructor(props: Props) {
-    const { data } = props;
+  shotLines: Object
 
+  diffShotLines: Object
+
+  timer: any
+
+  config: Object
+
+  constructor(props: Props) {
     this.props = props;
+
     this.state = createState({
       sizes: {
         space: 8,
-        chart: { width: 700, height: 450 },
-        heightAxisX: 30,
+        chart: { width: 700, height: 420 },
+        heightX: 30,
         map: { width: 700, height: 50 },
       },
       period: [0, 100],
-      statusLine: {},
       hiddenLines: [],
       countSectionsAxis: { y: 6, x: 6 },
+      animationDuration: 250,
+      colors: {
+        textY: '#526475',
+        y: '#293544',
+      },
     });
-    this.buildData = buildData(data, this.state.getValue());
 
-    this.createContainer();
+
+    this.y = this.createY();
+
     this.render();
+
+    this.state.subscribe(() => this.redraw());
+  }
+
+  createY() {
+    const { data } = this.props;
+    const { period, hiddenLines } = this.state.getValue();
+
+    return createY({
+      data,
+      period,
+      hiddenLines,
+    });
+  }
+
+  getShotLines = (size: Object) => {
+    const { data } = this.props;
+    const { period, hiddenLines, countSectionsAxis } = this.state.getValue();
+
+    return getShotLines({
+      y: this.y,
+      size,
+      data,
+      period,
+      hiddenLines,
+      countSectionsAxis,
+    });
+  }
+
+  getDiffShotLines = (prevShot: Object, nextShot: Object, percent: number = 100) => {
+    return getDiffShotLinesbyPercent({
+      prevHiddenLines: this.state.getPrevValue().hiddenLines,
+      nextHiddenLines: this.state.getValue().hiddenLines,
+      data: this.props.data,
+      y: this.y,
+      prevShot,
+      nextShot,
+      percent,
+    });
   }
 
   createContainer() {
@@ -68,20 +122,27 @@ class Chart {
   }
 
   createContent() {
+    const { sizes } = this.state.getValue();
+    const { chart, heightX } = sizes;
+
     this.content = new Content({
       owner: this.container,
-      state: this.state,
-      data: this.buildData,
+      size: {
+        ...chart,
+        height: chart.height + heightX,
+      },
+      getShotLines: this.getShotLines,
+      getDiffShotLines: this.getDiffShotLines,
     });
   }
 
   createMap() {
-    const { data } = this.props;
+    const { sizes } = this.state.getValue();
+    const { map } = sizes;
 
     this.map = new Map({
       owner: this.container,
-      state: this.state,
-      data,
+      size: map,
     });
   }
 
@@ -103,19 +164,57 @@ class Chart {
   }
 
   render() {
+    this.createContainer();
     this.createHeader();
     this.createContent();
-    this.createMap();
+    // this.createMap();
     this.createTogglersBar();
+
+    this.draw();
+  }
+
+  draw() {
+    this.content.draw();
+    // this.map.draw(drawParams);
+  }
+
+  redraw() {
+    const prevShowLines = this.shotLines;
+    const stateValue = this.state.getValue();
+    const {
+      period,
+      hiddenLines,
+      countSectionsAxis,
+      sizes,
+      animationDuration,
+    } = stateValue;
+
+    this.shotLines = getShotLines({
+      y: this.y,
+      size: sizes.chart,
+      data: this.props.data,
+      period,
+      hiddenLines,
+      countSectionsAxis,
+    });
+
+    if (!this.timer) {
+      this.timer = createTimer((time, percent) => {
+        this.diffShotLines = this.getDiffShotLines(
+          prevShowLines,
+          percent,
+        );
+
+        this.draw();
+      }, animationDuration).then(() => {
+        this.timer = null;
+        return true;
+      });
+    }
   }
 
   onChangeLine = (id: string) => (value: boolean) => {
     const stateValue = { ...this.state.getValue() };
-
-    stateValue.statusLine = {
-      ...stateValue.statusLine,
-      [id]: value,
-    };
 
     stateValue.hiddenLines = [...stateValue.hiddenLines];
 

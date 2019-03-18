@@ -9,7 +9,7 @@ const getMinMax = (prev, next) => ({
   max: prev.max < next.max ? next.max : prev.max,
 });
 
-export default (data: Object, state: Object) => getFilteredLinesByPeriod(data, state)
+export default (params: Object) => getFilteredLinesByPeriod(params)
   .reduce((res, line) => getMinMax(
     res,
     line.reduce(

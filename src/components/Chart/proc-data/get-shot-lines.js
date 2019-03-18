@@ -5,12 +5,20 @@ import getShowY from './get-show-y';
 import getPointsY from './get-points-y';
 import getPointsLines from './get-points-lines';
 
-export default (buildData: Object, state: Object) => {
-  const { originalData, y } = buildData;
-  const border = getBorder(originalData, state);
-  const showY = getShowY(border, y, state);
-  const pointsY = getPointsY(showY, y, state);
-  const pointsLines = getPointsLines(showY, originalData, state);
+type Params = {
+  y: Array<any>,
+  data: Object,
+  hiddenLines: Array<string>,
+  period: [number, number],
+  countSectionsAxis: Object,
+  size: Object,
+};
+
+export default (params: Params) => {
+  const border = getBorder(params);
+  const showY = getShowY({ ...params, border });
+  const pointsY = getPointsY({ ...params, showY });
+  const pointsLines = getPointsLines({ ...params, showY });
 
   return {
     border,

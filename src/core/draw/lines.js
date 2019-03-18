@@ -7,8 +7,7 @@ export default (params: Object) => {
   const { context, diffShotLines, data } = params;
   const ctx = context;
   const { pointsLines } = diffShotLines;
-  const { originalData } = data;
-  const { colors } = originalData;
+  const { colors } = data;
 
   ctx.lineWidth = 2;
   ctx.lineCap = 'butt';

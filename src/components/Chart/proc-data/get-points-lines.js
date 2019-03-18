@@ -2,16 +2,26 @@
 
 import getColumnsByType from './get-columns-by-type';
 
-export default (showY: Object, originalData: Object, state: Object) => {
-  const lines = getColumnsByType(originalData, 'line');
+type Params = {
+  showY: Object,
+  data: Object,
+  size: Object,
+  period: [number, number],
+};
+
+export default (params: Params) => {
+  const {
+    showY,
+    data,
+    size,
+    period,
+  } = params;
+  const lines = getColumnsByType(data, 'line');
   const { values } = showY;
   const maxY = values[values.length - 1];
-  const { sizes } = state;
-  const { chart } = sizes;
-  const { width, height } = chart;
+  const { width, height } = size;
   const percentWidth = width / 100;
   const percentHeight = height / 100;
-  const { period } = state;
   const percentPeriod = (period[1] - period[0]) / 100;
 
   return lines.reduce((resLines, line) => [

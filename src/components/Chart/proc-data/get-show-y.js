@@ -1,7 +1,13 @@
 // @flow
 
-export default (border: Object, y: Array<number>, state: Object) => {
-  const { countSectionsAxis } = state;
+type Params = {
+  border: Object,
+  y: Array<number>,
+  countSectionsAxis: Object,
+};
+
+export default (params: Params) => {
+  const { border, y, countSectionsAxis } = params;
   const { max } = border;
   const valIndex = y.reduce(
     (res, step, index) => (step < max ? index : res),
@@ -15,8 +21,6 @@ export default (border: Object, y: Array<number>, state: Object) => {
 
     return res;
   }, []);
-
-  // console.log(border, y, valIndex, valMod, values);
 
   let indexLastValue = y.indexOf(values[values.length - 1]);
 

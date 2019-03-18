@@ -1,9 +1,7 @@
 // @flow
 
-export default (columns: Array<Array<any>>, state: Object) => {
-  const { period } = state;
-
-  return columns.reduce((resMap, column) => [
+export default (columns: Array<Array<any>>, period: [number, number]) => columns.reduce(
+  (resMap, column) => [
     ...resMap,
     column.reduce((res, value, index) => {
       const percent = (index - 1) / (column.length - 2) * 100;
@@ -14,5 +12,6 @@ export default (columns: Array<Array<any>>, state: Object) => {
 
       return res;
     }, [column[0]]),
-  ], []);
-};
+  ],
+  [],
+);

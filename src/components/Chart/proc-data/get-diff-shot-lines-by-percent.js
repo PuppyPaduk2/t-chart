@@ -1,5 +1,15 @@
 // @flow
 
+type Params = {
+  data: Object,
+  prevShot: Object,
+  nextShot: Object,
+  percent: number,
+  prevHiddenLines: Array<string>,
+  nextHiddenLines: Array<string>,
+  y: Array<any>,
+};
+
 const getValueByPercent = (min: number, max: number, percent: number) => {
   const width = max - min;
   const percentWidth = width / 100;
@@ -28,10 +38,9 @@ const getDiffPointsY = (params: Object) => {
   const {
     prevShot,
     nextShot,
-    data,
     percent,
+    y,
   } = params;
-  const { y } = data;
 
   return y.reduce((res, value, index) => {
     const points = getValuePointsYByPercent({
@@ -67,22 +76,22 @@ const getDiffPointsY = (params: Object) => {
   }, []);
 };
 
-const getDiffPointsLines = (params: Object) => {
+const getDiffPointsLines = (params: Params) => {
   const {
     prevShot,
     nextShot,
     percent,
-    state,
-    statePrev,
+    prevHiddenLines,
+    nextHiddenLines,
   } = params;
 
   return prevShot.pointsLines.reduce((resLines, pointsLine, indexLine) => {
     const id = pointsLine[0];
-    const nextIndex = state.hiddenLines.indexOf(id);
+    const nextIndex = nextHiddenLines.indexOf(id);
     let opacity = nextIndex === -1 ? 1 : 0;
 
-    if (statePrev.hiddenLines !== state.hiddenLines) {
-      const prevIndex = statePrev.hiddenLines.indexOf(id);
+    if (prevHiddenLines !== nextHiddenLines) {
+      const prevIndex = prevHiddenLines.indexOf(id);
 
       if (prevIndex !== nextIndex) {
         if (nextIndex === -1) {
@@ -118,4 +127,5 @@ const getDiffPointsLines = (params: Object) => {
 export default (params: Object) => ({
   pointsY: getDiffPointsY(params),
   pointsLines: getDiffPointsLines(params),
+  data: params.data,
 });
