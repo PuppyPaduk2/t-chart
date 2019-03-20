@@ -127,5 +127,4 @@ const getDiffPointsLines = (params: Params) => {
 export default (params: Object) => ({
   pointsY: getDiffPointsY(params),
   pointsLines: getDiffPointsLines(params),
-  data: params.data,
 });

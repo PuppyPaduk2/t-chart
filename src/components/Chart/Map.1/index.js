@@ -90,6 +90,7 @@ class Map {
     // });
   }
 
+  // !move
   drawFrame(context: Object) {
     const ctx = context;
 
@@ -108,6 +109,7 @@ class Map {
       .forEach(border => ctx.fillRect(...border));
   }
 
+  // !move
   getConfigFrame() {
     const { state } = this.props;
     const { sizes, period } = state.getValue();
