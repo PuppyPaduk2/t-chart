@@ -291,9 +291,9 @@ class Chart {
   redraw() {
     const { animationDuration } = this.state.getValue();
 
-    if (!this.timer) {
-      this.createShotLines();
+    this.createShotLines();
 
+    if (!this.timer) {
       this.timer = createTimer(
         (time, percent) => this.draw(percent),
         animationDuration,
