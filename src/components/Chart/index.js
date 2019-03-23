@@ -13,6 +13,7 @@ import drawLines from '../../core/draw/lines';
 import drawY from '../../core/draw/y';
 import drawValuesY from '../../core/draw/values-y';
 import drawMapFrame from '../../core/draw/map-frame';
+import drawX from '../../core/draw/x';
 import getConfigMapFrame from './proc-data/get-config-map-frame';
 import mapGragDrop from './map-drag-drop';
 import './styles.css';
@@ -33,26 +34,46 @@ class Chart {
 
   contentCanvas: Object
 
-  contentShotLines: Object
+  shotLines: Object
 
   mapCanvas: Object
 
-  mapShotLines: Object
-
   mapState: Object
 
+  timer: Object
+
+  onWindowResize: Function = function onWindowResize() {
+    setTimeout(() => {
+      const state = this.state.getValue();
+      const width = this.container.offsetWidth;
+
+      this.state.setValue({
+        ...state,
+        sizes: {
+          ...state.sizes,
+          chart: { ...state.sizes.chart, width },
+          map: { ...state.sizes.map, width },
+        },
+      });
+    }, 0);
+  }
+
   constructor(props: Props) {
-    this.contentShotLines = {};
-    this.mapShotLines = {};
+    this.shotLines = {
+      content: {},
+      map: {},
+    };
 
     this.props = props;
+
+    this.createContainer();
 
     this.state = createState({
       sizes: {
         space: 8,
-        chart: { width: 700, height: 420 },
         heightX: 30,
-        map: { width: 700, height: 50 },
+        chart: { width: this.container.offsetWidth, height: 420 },
+        map: { width: this.container.offsetWidth, height: 50 },
       },
       period: [0, 100],
       hiddenLines: [],
@@ -60,6 +81,7 @@ class Chart {
       animationDuration: 250,
       colors: {
         textY: '#526475',
+        textX: '#526475',
         y: '#293544',
         mapFrame: {
           border: [91, 119, 148, 0.5],
@@ -68,12 +90,18 @@ class Chart {
       },
     });
 
+    this.listenToWindow();
 
     this.y = this.createY();
 
     this.render();
 
     this.state.subscribe(() => this.redraw());
+  }
+
+  listenToWindow = () => {
+    this.onWindowResize = this.onWindowResize.bind(this);
+    window.addEventListener('resize', this.onWindowResize);
   }
 
   createY() {
@@ -156,24 +184,27 @@ class Chart {
   }
 
   drawContent(percent?: number = 100) {
+    const { content } = this.shotLines;
     const size = this.getContentSize();
     const context = this.contentCanvas.getContext('2d');
     const drawParams = {
       data: this.props.data,
       state: this.state.getValue(),
       diffShotLines: this.getDiffShotLines(
-        this.contentShotLines.prev,
-        this.contentShotLines.next,
+        content.prev,
+        content.next,
         percent,
       ),
       context,
     };
 
     setSizeCanvas(this.contentCanvas, size);
+
     drawClear(context, size);
     drawY(drawParams);
     drawLines(drawParams);
     drawValuesY(drawParams);
+    drawX({ ...drawParams, y: size.height - 8 });
   }
 
   createMap() {
@@ -202,6 +233,7 @@ class Chart {
   }
 
   drawMap(percent?: number = 100) {
+    const { map } = this.shotLines;
     const size = this.getMapSize();
     const context = this.mapCanvas.getContext('2d');
     const stateValue = this.state.getValue();
@@ -209,8 +241,8 @@ class Chart {
       data: this.props.data,
       state: stateValue,
       diffShotLines: this.getDiffShotLines(
-        this.mapShotLines.prev,
-        this.mapShotLines.next,
+        map.prev,
+        map.next,
         percent,
       ),
       context,
@@ -252,7 +284,6 @@ class Chart {
   }
 
   render() {
-    this.createContainer();
     this.createHeader();
     this.createContent();
     this.createMap();
@@ -263,21 +294,25 @@ class Chart {
   }
 
   createShotLinesBy(key: string, params: Object) {
-    const { next } = this[key];
+    const { next } = this.shotLines[key];
     const newShotLines = this.getShotLines(params);
 
-    this[key] = {
+    this.shotLines[key] = {
       prev: next || newShotLines,
       next: newShotLines,
     };
   }
 
   createShotLines() {
-    this.createShotLinesBy('contentShotLines', {
-      size: this.getContentSize(),
-      period: this.state.getValue().period,
+    const { sizes, period } = this.state.getValue();
+    const { chart } = sizes;
+
+    this.createShotLinesBy('content', {
+      size: chart,
+      period,
     });
-    this.createShotLinesBy('mapShotLines', {
+
+    this.createShotLinesBy('map', {
       size: this.getMapSize(),
       period: [0, 100],
     });

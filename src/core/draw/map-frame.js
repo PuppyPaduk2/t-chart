@@ -1,13 +1,14 @@
 // @flow
 
 import { rgbaToString } from '../colors';
+import type { Rgba } from '../colors';
 
 type Params = {
   context: Object,
   config: Object,
   colors: {
-    border: Array<number>,
-    shadow: Array<number>,
+    border: Rgba,
+    shadow: Rgba,
   },
 };
 

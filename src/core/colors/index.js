@@ -1,6 +1,6 @@
 // @flow
 
-type Rgba = [number, number, number, number];
+export type Rgba = [number, number, number, number];
 
 export const hexToRgb = (value: string) => [
   parseInt(value.slice(1, 3), 16),

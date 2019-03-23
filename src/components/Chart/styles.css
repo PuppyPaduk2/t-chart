@@ -2,6 +2,10 @@
   margin-top: 16px;
 }
 
+.chart > :last-child {
+  margin-bottom: calc(var(--space) * 7);
+}
+
 .chart-header {
   font-family: Arial;
   font-weight: bold;

@@ -1,6 +1,7 @@
 // @flow
 
 import dragDrop from '../../../core/drag-drop';
+import getEventOffset from '../../../core/drag-drop/get-event-offset';
 
 const getPercentOffsetX = (dragDropState: Object, value: number) => {
   const { state } = dragDropState.getValue();
@@ -24,7 +25,7 @@ const onStartDragDrop = dragDropState => (params: Object) => {
   const { state, configFrame } = dragDropState.getValue();
   const { period } = state.getValue();
   const { map, mapNote } = configFrame;
-  const { offsetX } = eventStart;
+  const { offsetX } = getEventOffset(eventStart);
   let index = 0;
 
   for (index = 0; index < map.length; index += 1) {
@@ -41,8 +42,14 @@ const onStartDragDrop = dragDropState => (params: Object) => {
 
 const onMoveDragDropShadow = (dragDropState: Object, params: Object) => {
   const { eventDiff, eventStart } = params;
-  const percentStart = getPercentOffsetX(dragDropState, eventStart.offsetX);
-  const percentDiff = getPercentOffsetX(dragDropState, eventDiff.offsetX);
+  const percentStart = getPercentOffsetX(
+    dragDropState,
+    getEventOffset(eventStart).offsetX,
+  );
+  const percentDiff = getPercentOffsetX(
+    dragDropState,
+    getEventOffset(eventDiff).offsetX,
+  );
 
   if (percentDiff > 0) {
     let borderRight = percentStart + percentDiff;
@@ -62,7 +69,10 @@ const onMoveDragDropShadow = (dragDropState: Object, params: Object) => {
 const onMoveDragDropFrame = (dragDropState: Object, params: Object) => {
   const { stateStart, eventDiff } = params;
   const { period } = stateStart;
-  const percentDiff = getPercentOffsetX(dragDropState, eventDiff.offsetX);
+  const percentDiff = getPercentOffsetX(
+    dragDropState,
+    getEventOffset(eventDiff).offsetX,
+  );
   const newPeriod = [period[0] + percentDiff, period[1] + percentDiff];
 
   newPeriod[0] = newPeriod[0] > 0 ? newPeriod[0] : 0;
@@ -76,7 +86,10 @@ const onMoveDragDropFrame = (dragDropState: Object, params: Object) => {
 const onMoveDragDropTriggerLeft = (dragDropState: Object, params: Object) => {
   const { stateStart, eventDiff } = params;
   const { period } = stateStart;
-  const percentDiff = getPercentOffsetX(dragDropState, eventDiff.offsetX);
+  const percentDiff = getPercentOffsetX(
+    dragDropState,
+    getEventOffset(eventDiff).offsetX,
+  );
   let borderLeft = period[0] + percentDiff;
 
   borderLeft = borderLeft > 0 ? borderLeft : 0;
@@ -92,7 +105,10 @@ const onMoveDragDropTriggerLeft = (dragDropState: Object, params: Object) => {
 const onMoveDragDropTriggerRight = (dragDropState: Object, params: Object) => {
   const { stateStart, eventDiff } = params;
   const { period } = stateStart;
-  const percentDiff = getPercentOffsetX(dragDropState, eventDiff.offsetX);
+  const percentDiff = getPercentOffsetX(
+    dragDropState,
+    getEventOffset(eventDiff).offsetX,
+  );
   let borderRight = period[1] + percentDiff;
 
   borderRight = borderRight > 0 ? borderRight : 0;
@@ -139,7 +155,7 @@ const onClickDragDrop = dragDropState => (params: Object) => {
   const { name } = eventObject;
 
   if (name === 'shadow' || name === 'frame') {
-    const { offsetX } = eventClick;
+    const { offsetX } = getEventOffset(eventClick);
     const percentOffsetX = getPercentOffsetX(dragDropState, offsetX);
     const percentDiff = 3;
     const period = [
