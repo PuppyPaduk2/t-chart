@@ -8,8 +8,9 @@ export default (params: Object) => {
   const { pointsY } = diffShotLines;
   const { sizes, colors } = state;
   const { textY } = colors;
+  const isTouch = 'ontouchstart' in window;
 
-  ctx.font = '18px Arial';
+  ctx.font = `${isTouch ? 16 : 18}px Arial`;
 
   pointsY.forEach((point) => {
     const { points, opacity, value } = point;

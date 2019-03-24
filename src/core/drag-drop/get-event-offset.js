@@ -9,7 +9,6 @@ export default (event: Object) => {
       offsetY: event.targetTouches[0].pageY - rect.top,
     };
   }
-
   return {
     offsetX: event.offsetX,
     offsetY: event.offsetY,

@@ -37,6 +37,7 @@ export default (params: Params) => {
         resLine.push([
           percentX * percentWidth,
           height - percentY * percentHeight,
+          percentX, value,
         ]);
       }
 

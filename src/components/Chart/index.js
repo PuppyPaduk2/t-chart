@@ -16,11 +16,15 @@ import drawMapFrame from '../../core/draw/map-frame';
 import drawX from '../../core/draw/x';
 import getConfigMapFrame from './proc-data/get-config-map-frame';
 import mapGragDrop from './map-drag-drop';
+import createDragDrop from '../../core/drag-drop';
+import getEventOffset from '../../core/drag-drop/get-event-offset';
+import drawSelectedPoint from '../../core/draw/selected-point';
 import './styles.css';
 
 type Props = {
   owner: Object,
   data: Object,
+  colors: Object,
 };
 
 class Chart {
@@ -42,10 +46,15 @@ class Chart {
 
   timer: Object
 
+  selectedPoint: any
+
   onWindowResize: Function = function onWindowResize() {
     setTimeout(() => {
       const state = this.state.getValue();
-      const width = this.container.offsetWidth;
+      const isTouch = 'ontouchstart' in window;
+      const width = this.container.offsetWidth - (
+        isTouch ? 0 : 16
+      );
 
       this.state.setValue({
         ...state,
@@ -59,6 +68,8 @@ class Chart {
   }
 
   constructor(props: Props) {
+    const { colors } = props;
+
     this.shotLines = {
       content: {},
       map: {},
@@ -68,27 +79,30 @@ class Chart {
 
     this.createContainer();
 
+    const isTouch = 'ontouchstart' in window;
+    const width = this.container.offsetWidth - (
+      isTouch ? 0 : 16
+    );
+
     this.state = createState({
       sizes: {
         space: 8,
         heightX: 30,
-        chart: { width: this.container.offsetWidth, height: 420 },
-        map: { width: this.container.offsetWidth, height: 50 },
+        chart: { width, height: 420 },
+        map: { width, height: 50 },
       },
       period: [0, 100],
       hiddenLines: [],
       countSectionsAxis: { y: 6, x: 6 },
       animationDuration: 250,
-      colors: {
-        textY: '#526475',
-        textX: '#526475',
-        y: '#293544',
-        mapFrame: {
-          border: [91, 119, 148, 0.5],
-          shadow: [31, 42, 56, 0.7],
-        },
-      },
+      colors,
+      radiusSelectedPoint: 5,
+      innerRadiusSelectedPoint: 3,
     });
+
+    this.selectedPoint = createState(null);
+
+    this.selectedPoint.subscribe(this.changeSelectedPoint);
 
     this.listenToWindow();
 
@@ -170,6 +184,53 @@ class Chart {
     this.contentCanvas = createElement({
       tagName: 'canvas',
       owner: content,
+    });
+
+    createDragDrop({
+      owner: this.contentCanvas,
+      listeners: {
+        onClick: ({ eventClick }) => {
+          const { offsetX } = getEventOffset(eventClick);
+          const { width } = this.getContentSize();
+          const percentWidth = width / 100;
+          const percents = offsetX / percentWidth;
+          const { next } = this.shotLines.content;
+          const { pointsLines } = next;
+          const clickPoints = pointsLines.reduce((res, pointsLine) => {
+            let minK = 99999999;
+
+            return [
+              ...res,
+              [pointsLine[0], ...pointsLine.reduce((resPL, point) => {
+                if (typeof point === 'object') {
+                  const percent = Math.abs(percents - point[2]);
+
+                  if (minK > percent) {
+                    minK = percent;
+
+                    return point;
+                  }
+                }
+
+                return resPL;
+              }, [])],
+            ];
+          }, []);
+
+          this.selectedPoint.setValue(clickPoints);
+        },
+      },
+    });
+  }
+
+  changeSelectedPoint = () => {
+    this.draw();
+
+    drawSelectedPoint({
+      selectedPoint: this.selectedPoint.getValue(),
+      state: this.state.getValue(),
+      context: this.contentCanvas.getContext('2d'),
+      data: this.props.data,
     });
   }
 
