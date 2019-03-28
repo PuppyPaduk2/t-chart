@@ -1,0 +1,21 @@
+.chart > *:not(:first-child) {
+  margin-top: 16px;
+}
+
+.chart > :last-child {
+  margin-bottom: calc(var(--space) * 7);
+}
+
+.chart-header {
+  font-family: Arial;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.chart-togglers-bar {
+  display: flex;
+}
+
+.chart-togglers-bar > *:not(:first-child) {
+  margin-left: 16px;
+}

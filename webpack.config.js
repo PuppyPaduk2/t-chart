@@ -1,4 +1,5 @@
 const CopyPlugin = require('copy-webpack-plugin');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = {
   output: {
@@ -18,17 +19,27 @@ module.exports = {
         loader: 'babel-loader',
         options: {
           cacheDirectory: true,
-          presets: ['@babel/preset-env'],
+          presets: ['@babel/preset-env', '@babel/flow'],
+          plugins: ['@babel/plugin-proposal-class-properties'],
         },
       },
+    }, {
+      test: /\.css$/,
+      use: ['style-loader', 'css-loader'],
     }],
   },
-  mode: 'development',
+  mode: 'development', // production
   plugins: [
     new CopyPlugin([
       { from: 'public', to: '.' },
     ]),
   ],
+  optimization: {
+    minimizer: [new UglifyJsPlugin({
+      cache: true,
+      sourceMap: true,
+    })],
+  },
   devServer: {
     writeToDisk: true,
     port: 5000,
